@@ -9,15 +9,30 @@ import {
   SessionManager,
 } from "@earendil-works/pi-coding-agent";
 
-import { PRISM_SYSTEM_PROMPT } from "./prism-system-prompt.js";
-import { createPrismRuntimeContext, type PrismRuntimeContext } from "./prism-runtime-context.js";
-import { createPrismToolDefinitions } from "./register-prism-tools.js";
+import {
+  GENERIC_ASSISTANT_VERTICAL,
+  createKernelRuntimeContext,
+  type KernelRuntimeContext,
+  type KernelVertical,
+} from "./vertical.js";
 
 type CreateAgentSessionOptions = NonNullable<Parameters<typeof createAgentSession>[0]>;
 
 export interface CreateKernelAgentSessionOptions {
   cwd?: string;
-  runtimeContext?: PrismRuntimeContext;
+  /**
+   * The vertical to load. Defaults to `GENERIC_ASSISTANT_VERTICAL` — a neutral assistant
+   * with no domain tools. Inject a vertical (e.g. `FUNDING_BASIS_VERTICAL_PLUGIN`) to give
+   * the session a domain identity and tools without editing the kernel core.
+   *
+   * Typed over `any` context: a vertical declares its own runtime-context shape, and the
+   * kernel invokes `createRuntimeContext`/`createTools` as a matched pair, so the kernel
+   * core never needs to know the concrete context type.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vertical?: KernelVertical<any>;
+  /** Override the runtime context. Default: the vertical's context, else the generic one. */
+  runtimeContext?: KernelRuntimeContext;
   /** Override auth storage (e.g. to inject a runtime API key). Default: AuthStorage.create(). */
   authStorage?: AuthStorage;
   /** Override model registry (e.g. to register a custom OpenAI-compatible provider). */
@@ -28,16 +43,23 @@ export interface CreateKernelAgentSessionOptions {
   thinkingLevel?: CreateAgentSessionOptions["thinkingLevel"];
 }
 
+function resolveRuntimeContext(options: CreateKernelAgentSessionOptions): KernelRuntimeContext {
+  if (options.runtimeContext) return options.runtimeContext;
+  const vertical = options.vertical ?? GENERIC_ASSISTANT_VERTICAL;
+  return vertical.createRuntimeContext?.() ?? createKernelRuntimeContext();
+}
+
 /**
- * Build the exact Pi session options Prism passes into `createAgentSession(...)`.
+ * Build the exact Pi session options the kernel passes into `createAgentSession(...)`.
  *
- * This is the canonical boundary where generic Pi runtime becomes Prism product runtime:
- * - inject Prism runtime identity/policy via `resourceLoader`
- * - disable builtin coding tools for product runtime
- * - expose Prism domain tools only
+ * This is the canonical boundary where the generic Pi runtime becomes a product runtime:
+ * - inject the active vertical's identity (system prompt) via `resourceLoader`
+ * - disable builtin coding tools (the base never exposes them)
+ * - expose only the active vertical's tools (none for the generic default)
  *
- * Exported for narrow bootstrap tests so we can prove the wiring without spinning up a
- * real Pi session.
+ * The kernel core knows nothing about any domain: identity and tools come entirely from the
+ * injected `KernelVertical`. Exported for narrow bootstrap tests so we can prove the wiring
+ * without spinning up a real Pi session.
  */
 export async function buildAgentSessionOptions(
   options: CreateKernelAgentSessionOptions = {},
@@ -45,15 +67,16 @@ export async function buildAgentSessionOptions(
   const cwd = options.cwd ?? process.cwd();
   const authStorage = options.authStorage ?? AuthStorage.create();
   const modelRegistry = options.modelRegistry ?? ModelRegistry.create(authStorage);
-  const runtimeContext = options.runtimeContext ?? createPrismRuntimeContext();
+  const vertical = options.vertical ?? GENERIC_ASSISTANT_VERTICAL;
+  const runtimeContext = resolveRuntimeContext({ ...options, vertical });
 
-  // SDK-supported path for runtime identity injection. We replace the base Pi system
-  // prompt with the Prism product-runtime contract while leaving skills/tools/context-file
-  // resource loading intact.
+  // SDK-supported path for runtime identity injection. We replace the base Pi system prompt
+  // with the active vertical's identity while leaving skills/tools/context-file resource
+  // loading intact.
   const resourceLoader = new DefaultResourceLoader({
     cwd,
     agentDir: resolve(homedir(), ".pi", "agent"),
-    systemPromptOverride: () => PRISM_SYSTEM_PROMPT,
+    systemPromptOverride: () => vertical.systemPrompt,
   });
   await resourceLoader.reload();
 
@@ -65,16 +88,16 @@ export async function buildAgentSessionOptions(
     resourceLoader,
     ...(options.model ? { model: options.model } : {}),
     ...(options.thinkingLevel ? { thinkingLevel: options.thinkingLevel } : {}),
-    // Product runtime must not expose coding tools by default.
-    // Only Prism domain tools are active.
+    // Product runtime must not expose coding tools. Only the active vertical's tools are active.
     noTools: "builtin",
-    customTools: createPrismToolDefinitions(runtimeContext),
+    customTools: vertical.createTools(runtimeContext),
   };
 }
 
 export async function createKernelAgentSession(options: CreateKernelAgentSessionOptions = {}) {
-  const runtimeContext = options.runtimeContext ?? createPrismRuntimeContext();
-  const sessionOptions = await buildAgentSessionOptions({ ...options, runtimeContext });
+  const vertical = options.vertical ?? GENERIC_ASSISTANT_VERTICAL;
+  const runtimeContext = resolveRuntimeContext({ ...options, vertical });
+  const sessionOptions = await buildAgentSessionOptions({ ...options, vertical, runtimeContext });
   const result = await createAgentSession(sessionOptions);
   return { session: result.session, runtimeContext };
 }

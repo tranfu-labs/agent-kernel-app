@@ -13,6 +13,7 @@
     "typecheck": "tsc -b tsconfig.json --pretty false",
     "test": "npm run test --workspaces --if-present",
     "smoke:pi": "npm run build && npm run smoke:pi -w @agentkernel/agent-api",
+    "smoke:generic": "npm run build && npm run smoke:generic -w @agentkernel/agent-api",
     "smoke:funding": "npm run build && npm run smoke:funding -w @agentkernel/agent-api",
     "smoke:funding-scan": "npm run build && npm run smoke:funding-scan -w @agentkernel/agent-api",
     "smoke:binance-market-data": "npm run build && npm run smoke:binance-market-data -w @agentkernel/agent-api",

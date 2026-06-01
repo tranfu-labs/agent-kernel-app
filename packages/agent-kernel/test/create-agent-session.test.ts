@@ -7,33 +7,89 @@ import {
   buildAgentSessionOptions,
   createKernelAgentSession,
 } from "../src/create-agent-session.js";
+import { GENERIC_SYSTEM_PROMPT } from "../src/system-prompt.js";
+import { GENERIC_ASSISTANT_VERTICAL, createKernelRuntimeContext, type KernelVertical } from "../src/vertical.js";
+import { FUNDING_BASIS_VERTICAL_PLUGIN } from "../src/funding-basis-plugin.js";
 import { PRISM_SYSTEM_PROMPT } from "../src/prism-system-prompt.js";
-import { createPrismRuntimeContext, createPrismToolDefinitions } from "../src/index.js";
+import { createPrismRuntimeContext } from "../src/prism-runtime-context.js";
+import { createPrismToolDefinitions } from "../src/register-prism-tools.js";
 
-test("buildAgentSessionOptions injects Prism resourceLoader and preserves runtime wiring", async () => {
+test("T1: default session is the generic assistant — no tools, generic identity", async () => {
   const authStorage = AuthStorage.inMemory();
   const modelRegistry = ModelRegistry.inMemory(authStorage);
-  const runtimeContext = createPrismRuntimeContext();
 
   const options = await buildAgentSessionOptions({
-    cwd: "/tmp/prism-session-test",
+    cwd: "/tmp/agentkernel-session-test",
     authStorage,
     modelRegistry,
-    runtimeContext,
     thinkingLevel: "off",
   });
 
-  assert.equal(options.cwd, "/tmp/prism-session-test");
-  assert.equal(options.authStorage, authStorage);
-  assert.equal(options.modelRegistry, modelRegistry);
-  assert.equal(options.thinkingLevel, "off");
   assert.equal(options.noTools, "builtin");
-  assert.deepEqual(
-    options.customTools?.map((tool) => tool.name),
-    createPrismToolDefinitions(runtimeContext).map((tool) => tool.name),
-  );
-  assert.ok(options.resourceLoader, "resourceLoader should be present");
+  assert.deepEqual(options.customTools, []);
+  assert.equal(options.resourceLoader?.getSystemPrompt(), GENERIC_SYSTEM_PROMPT);
+});
+
+test("T2: generic system prompt carries no domain vocabulary", () => {
+  for (const banned of [/prism/i, /funding/i, /venue/i, /financial/i, /trade/i, /arbitrage/i]) {
+    assert.ok(!banned.test(GENERIC_SYSTEM_PROMPT), `GENERIC_SYSTEM_PROMPT must not match ${banned}`);
+  }
+});
+
+test("T3: an injected vertical drives the system prompt and tools", async () => {
+  const authStorage = AuthStorage.inMemory();
+  const modelRegistry = ModelRegistry.inMemory(authStorage);
+  const sentinelTools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const stub: KernelVertical = {
+    id: "stub",
+    systemPrompt: "STUB IDENTITY PROMPT",
+    createTools: () => sentinelTools,
+  };
+
+  const options = await buildAgentSessionOptions({ authStorage, modelRegistry, vertical: stub });
+
+  assert.equal(options.resourceLoader?.getSystemPrompt(), "STUB IDENTITY PROMPT");
+  assert.deepEqual(options.customTools, sentinelTools);
+  assert.equal(options.noTools, "builtin");
+});
+
+test("T4: a vertical's createRuntimeContext is used to build its tools", async () => {
+  const authStorage = AuthStorage.inMemory();
+  const modelRegistry = ModelRegistry.inMemory(authStorage);
+  let seen: unknown;
+  const vertical: KernelVertical = {
+    id: "ctx-probe",
+    systemPrompt: "p",
+    createRuntimeContext: () => {
+      const ctx = createKernelRuntimeContext();
+      (ctx as { marker?: string }).marker = "from-vertical";
+      return ctx;
+    },
+    createTools: (ctx) => {
+      seen = (ctx as { marker?: string }).marker;
+      return [];
+    },
+  };
+
+  await buildAgentSessionOptions({ authStorage, modelRegistry, vertical });
+  assert.equal(seen, "from-vertical");
+});
+
+test("T5: FUNDING_BASIS_VERTICAL_PLUGIN reproduces the funding tool set and identity", async () => {
+  const authStorage = AuthStorage.inMemory();
+  const modelRegistry = ModelRegistry.inMemory(authStorage);
+
+  const options = await buildAgentSessionOptions({
+    authStorage,
+    modelRegistry,
+    vertical: FUNDING_BASIS_VERTICAL_PLUGIN,
+  });
+
   assert.equal(options.resourceLoader?.getSystemPrompt(), PRISM_SYSTEM_PROMPT);
+  assert.deepEqual(
+    options.customTools?.map((tool) => tool.name).sort(),
+    createPrismToolDefinitions(createPrismRuntimeContext()).map((tool) => tool.name).sort(),
+  );
 });
 
 test("buildAgentSessionOptions forwards explicit model unchanged", async () => {
@@ -41,32 +97,36 @@ test("buildAgentSessionOptions forwards explicit model unchanged", async () => {
   const modelRegistry = ModelRegistry.inMemory(authStorage);
   const fakeModel = { provider: "test", id: "model-x" } as never;
 
-  const options = await buildAgentSessionOptions({
-    authStorage,
-    modelRegistry,
-    model: fakeModel,
-  });
+  const options = await buildAgentSessionOptions({ authStorage, modelRegistry, model: fakeModel });
 
   assert.equal(options.model, fakeModel);
   assert.equal(options.noTools, "builtin");
   assert.ok(options.resourceLoader);
 });
 
-test("createKernelAgentSession returns a session and runtimeContext using the canonical bootstrap path", async () => {
+test("createKernelAgentSession default session uses the generic identity", async () => {
   const { session, runtimeContext } = await createKernelAgentSession({
-    cwd: "/tmp/prism-session-live-test",
+    cwd: "/tmp/agentkernel-session-live-test",
   });
 
   assert.ok(session, "session should be created");
   assert.ok(runtimeContext, "runtimeContext should be created");
   assert.equal(typeof session.prompt, "function");
-  assert.equal(typeof session.subscribe, "function");
-  assert.equal(typeof session.abort, "function");
-  assert.equal(typeof session.dispose, "function");
-  // The live session exposes the composed system prompt through its public state.
-  const prompt = session.state.systemPrompt;
-  assert.equal(typeof prompt, "string");
-  assert.match(prompt, /You are Prism, a collaborative financial research manager and intelligence-to-action agent\./);
-  assert.match(prompt, /Never invent financial facts\./);
+  assert.ok(
+    session.state.systemPrompt.startsWith(GENERIC_SYSTEM_PROMPT),
+    "live system prompt should begin with the generic identity",
+  );
+  assert.ok(!/prism/i.test(session.state.systemPrompt));
+  assert.ok(!/funding/i.test(session.state.systemPrompt));
+  session.dispose();
+});
+
+test("createKernelAgentSession with the funding vertical uses the funding identity", async () => {
+  assert.equal(GENERIC_ASSISTANT_VERTICAL.id, "general");
+  const { session } = await createKernelAgentSession({
+    cwd: "/tmp/agentkernel-session-funding-test",
+    vertical: FUNDING_BASIS_VERTICAL_PLUGIN,
+  });
+  assert.match(session.state.systemPrompt, /You are Prism, a collaborative financial research manager/);
   session.dispose();
 });

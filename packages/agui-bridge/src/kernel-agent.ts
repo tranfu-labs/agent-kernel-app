@@ -45,7 +45,7 @@ export class KernelAgent extends AbstractAgent {
   constructor(opts: KernelAgentOptions) {
     super({
       agentId: opts.agentId ?? "agent",
-      description: opts.description ?? "Prism financial intelligence-to-action agent",
+      description: opts.description ?? "AgentKernel assistant",
     });
     this.store = opts.store;
     this.resolveUserId = opts.resolveUserId ?? (() => "local");

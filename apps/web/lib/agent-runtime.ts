@@ -5,11 +5,17 @@ import {
   configureOpenAiCompatibleProvider,
   createKernelAgentSession,
   type ConfiguredProvider,
+  type CreateKernelAgentSessionOptions,
 } from "@agentkernel/agent-kernel";
+import { FUNDING_BASIS_VERTICAL_PLUGIN } from "@agentkernel/agent-kernel/funding-basis";
 import { KernelAgent, WarmSessionStore, type PiSessionLike } from "@agentkernel/agui-bridge";
 
 /**
- * Server-side Prism agent runtime for the CopilotKit route.
+ * Server-side AgentKernel runtime for the CopilotKit route.
+ *
+ * By default this runs the generic assistant vertical (no domain tools). Set
+ * `AGENTKERNEL_VERTICAL=funding-basis` to load the funding-basis reference vertical — the
+ * kernel core stays domain-agnostic; the vertical is injected here at the edge.
  *
  * The WarmSessionStore MUST be a process-level singleton so Pi sessions survive between
  * requests (plan §2.3). This requires a PERSISTENT Node process (`next start` on a
@@ -23,14 +29,22 @@ declare global {
   var __agent: KernelAgent | undefined;
 }
 
+/** Optionally resolve a vertical from env. Default (unset) = generic assistant. */
+function resolveVertical(): CreateKernelAgentSessionOptions["vertical"] | undefined {
+  if (process.env.AGENTKERNEL_VERTICAL === "funding-basis") {
+    return FUNDING_BASIS_VERTICAL_PLUGIN;
+  }
+  return undefined;
+}
+
 /**
  * Dev convenience: load the repo-root `.env.smoke` (gitignored) so CLOUDAIKEY_* are
  * available without re-entering the key. PRODUCTION should set real env vars (Railway
  * dashboard etc.) — those take precedence and this file-load is skipped if already set.
  */
 function loadEnvSmokeOnce(): void {
-  if (process.env.__PRISM_ENV_SMOKE_LOADED) return;
-  process.env.__PRISM_ENV_SMOKE_LOADED = "1";
+  if (process.env.__AGENTKERNEL_ENV_SMOKE_LOADED) return;
+  process.env.__AGENTKERNEL_ENV_SMOKE_LOADED = "1";
   let dir = process.cwd();
   for (let i = 0; i < 6; i++) {
     const candidate = resolve(dir, ".env.smoke");
@@ -74,17 +88,19 @@ function resolveConfiguredProvider(): ConfiguredProvider | null {
 function buildAgent(): KernelAgent {
   // Configure the provider ONCE at startup and reuse it across warm sessions.
   const configured = resolveConfiguredProvider();
+  const vertical = resolveVertical();
 
   const store = new WarmSessionStore(async () => {
-    const { session } = await createKernelAgentSession(
-      configured
+    const { session } = await createKernelAgentSession({
+      ...(vertical ? { vertical } : {}),
+      ...(configured
         ? {
             authStorage: configured.authStorage,
             modelRegistry: configured.modelRegistry,
             model: configured.defaultModel,
           }
-        : {},
-    );
+        : {}),
+    });
     return { session: session as unknown as PiSessionLike };
   });
 

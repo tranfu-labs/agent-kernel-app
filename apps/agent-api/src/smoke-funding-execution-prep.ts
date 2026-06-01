@@ -1,4 +1,4 @@
-import { createPrismRuntimeContext, createPrismToolDefinitions } from "@agentkernel/agent-kernel";
+import { createPrismRuntimeContext, createPrismToolDefinitions } from "@agentkernel/agent-kernel/funding-basis";
 
 const createdAt = "2026-05-31T00:00:00.000Z";
 const context = createPrismRuntimeContext();

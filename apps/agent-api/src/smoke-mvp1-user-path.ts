@@ -2,7 +2,7 @@ import {
   createPrismRuntimeContext,
   createPrismToolDefinitions,
   resolvePlatformResearchRequest,
-} from "@agentkernel/agent-kernel";
+} from "@agentkernel/agent-kernel/funding-basis";
 import type { FetchStatus } from "@agentkernel/domain";
 
 const context = createPrismRuntimeContext();

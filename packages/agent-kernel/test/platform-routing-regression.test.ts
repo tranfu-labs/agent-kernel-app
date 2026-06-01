@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { resolvePlatformResearchRequest } from "../src/index.js";
+import { resolvePlatformResearchRequest } from "../src/funding-basis.js";
 import { PLATFORM_ROUTING_CASES_DEV, type PlatformRoutingCase } from "./fixtures/platform-routing-cases.dev.js";
 import { PLATFORM_ROUTING_CASES_HOLDOUT } from "./fixtures/platform-routing-cases.holdout.js";
 

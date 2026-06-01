@@ -1,6 +1,10 @@
 import type { SourceMap } from "./source-map.js";
 
-export type ResearchVertical = "funding_basis" | "prediction_market";
+// Open vertical identifier: a vertical declares its own id (e.g. "funding_basis") without
+// editing `domain`. Known ids are kept as literals for autocomplete; `(string & {})` keeps
+// the type open. (Phase 2 relocates the financial id constants into the funding vertical.)
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type ResearchVertical = "funding_basis" | "prediction_market" | (string & {});
 
 export type ResearchPhase =
   | "goal_framing"

@@ -2,7 +2,7 @@ import {
   createPrismRuntimeContext,
   createPrismToolDefinitions,
   resolvePlatformResearchRequest,
-} from "@agentkernel/agent-kernel";
+} from "@agentkernel/agent-kernel/funding-basis";
 
 const context = createPrismRuntimeContext();
 const tools = createPrismToolDefinitions(context);

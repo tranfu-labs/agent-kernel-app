@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "smoke:generic": "node dist/smoke-generic.js",
     "smoke:binance-market-data": "node dist/smoke-binance-market-data.js",
     "smoke:funding-basis-provider": "node dist/smoke-funding-basis-provider.js",
     "smoke:funding-basis-tool": "node dist/smoke-funding-basis-tool.js",

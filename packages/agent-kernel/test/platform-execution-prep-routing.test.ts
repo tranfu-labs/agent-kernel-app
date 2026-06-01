@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolvePlatformResearchRequest } from "../src/index.js";
+import { resolvePlatformResearchRequest } from "../src/funding-basis.js";
 
 test("execution-prep requests route to proposal path without unlocking execution", () => {
   const input = "给我准备一个 Binance 和 Bitget 的资金费率套利执行前准备方案";

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import baseline from "./fixtures/raw-pi-agent-baseline.v1.json" with { type: "json" };
 import { PLATFORM_ROUTING_CASES_ACCEPTANCE } from "./fixtures/platform-routing-cases.acceptance.js";
-import { resolvePlatformResearchRequest } from "../src/index.js";
+import { resolvePlatformResearchRequest } from "../src/funding-basis.js";
 
 interface BaselineResult {
   name: string;

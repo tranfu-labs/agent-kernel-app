@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolvePlatformResearchGuidanceRequest } from "../src/index.js";
+import { resolvePlatformResearchGuidanceRequest } from "../src/funding-basis.js";
 
 test("World Cup + Polymarket requests route to prediction-market inspect/discover guidance without pretending support is implemented", () => {
   const result = resolvePlatformResearchGuidanceRequest("Help me research whether the World Cup final market on Polymarket is worth watching");

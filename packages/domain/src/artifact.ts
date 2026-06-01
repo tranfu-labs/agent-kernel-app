@@ -35,7 +35,11 @@ export type ArtifactType =
   | "execution_receipt"
   | "watch_plan"
   | "post_trade_review"
-  | (typeof ARTIFACT_FAMILY_TYPES)[number];
+  | (typeof ARTIFACT_FAMILY_TYPES)[number]
+  // Open the type so a vertical can introduce a new artifact type without editing `domain`.
+  // Known literals above are retained for editor autocomplete and generic tooling.
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (string & {});
 
 export type ArtifactCreatedBy = "operation" | "agent" | "user" | "system";
 
