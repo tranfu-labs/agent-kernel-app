@@ -1,0 +1,10 @@
+[Prism workflow] Before responding, classify the task level (0–4) and route accordingly:
+- Level 0–1 (typo / one-line / narrow non-architecture fix): handle inline.
+- Level 2+ (module design, non-trivial refactor, tech selection, architecture, contracts, tools):
+  use the multi-agent gates. Do NOT go request -> first plan.
+  - Build/implement work -> prism-planner -> prism-critic -> prism-rebuttal -> prism-evaluator -> prism-generator.
+  - Tech-selection / library / module / "what are the options" research -> prism-researcher (research + DECIDE), or run /prism-decide.
+- Decision authority: decide technical/reversible matters yourself; escalate to the user ONLY
+  product-defining, preference-driven, or irreversible/outward-facing forks
+  (delete data, spend money, execute trades, publish, change permissions, product-defining contract changes).
+- Level 3+ (domain contracts, tool/provider boundaries, artifact lifecycle, risk/execution): OpenSpec first.

@@ -1,0 +1,12 @@
+{
+  "name": "@agentkernel/pi-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "keywords": ["pi-package", "prism", "agent", "trading"],
+  "pi": {
+    "skills": ["./skills"],
+    "extensions": ["./extensions"],
+    "prompts": ["./prompts"]
+  }
+}

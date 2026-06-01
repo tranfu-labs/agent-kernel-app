@@ -1,0 +1,19 @@
+{
+  "env": {
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-opus-4-8",
+    "ANTHROPIC_SMALL_FAST_MODEL": "claude-opus-4-8"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat .claude/prism-workflow-reminder.txt",
+            "statusMessage": "Loading Prism workflow reminder"
+          }
+        ]
+      }
+    ]
+  }
+}

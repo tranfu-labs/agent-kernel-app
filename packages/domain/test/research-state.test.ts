@@ -1,0 +1,49 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  createResearchState,
+  isMethodLocked,
+  type ResearchState,
+  type SourceMap,
+} from "../src/index.js";
+
+test("createResearchState starts after goal framing in method exploration with structured pause state", () => {
+  const state = createResearchState({
+    goal: "Research Binance/Bitget funding-basis opportunities",
+    scope: "BTC/ETH/SOL read-only scan",
+    vertical: "funding_basis",
+  });
+
+  const expectedSourceMap: SourceMap = {
+    entries: [],
+  };
+
+  assert.equal(state.currentPhase, "method_exploration");
+  assert.equal(state.methodState.status, "exploring");
+  assert.equal(state.autonomyMode, "pause_required");
+  assert.equal(state.pauseState?.reason, "method_lock_required");
+  assert.deepEqual(state.sourceMap, expectedSourceMap);
+  assert.deepEqual(state.artifactSet, []);
+});
+
+test("isMethodLocked only returns true for locked method states", () => {
+  const exploring: ResearchState = createResearchState({
+    goal: "Research prediction market",
+    scope: "World Cup final",
+    vertical: "prediction_market",
+  });
+
+  const locked: ResearchState = {
+    ...exploring,
+    methodState: {
+      ...exploring.methodState,
+      status: "locked",
+      selectedMethod: "multi_source_event_market_research",
+    },
+    autonomyMode: "auto_with_notice",
+    pauseState: undefined,
+  };
+
+  assert.equal(isMethodLocked(exploring), false);
+  assert.equal(isMethodLocked(locked), true);
+});
