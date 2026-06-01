@@ -1,4 +1,4 @@
-import { buildSignalArtifactFromMonitor } from "@agentkernel/operations";
+import { buildSignalArtifactFromMonitor } from "@agentkernel/funding-basis";
 
 const signal = buildSignalArtifactFromMonitor({
   monitorRef: "monitor_eth_basis",

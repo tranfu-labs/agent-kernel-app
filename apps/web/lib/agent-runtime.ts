@@ -7,7 +7,7 @@ import {
   type ConfiguredProvider,
   type CreateKernelAgentSessionOptions,
 } from "@agentkernel/agent-kernel";
-import { FUNDING_BASIS_VERTICAL_PLUGIN } from "@agentkernel/agent-kernel/funding-basis";
+import { FUNDING_BASIS_VERTICAL_PLUGIN } from "@agentkernel/funding-basis";
 import { KernelAgent, WarmSessionStore, type PiSessionLike } from "@agentkernel/agui-bridge";
 
 /**

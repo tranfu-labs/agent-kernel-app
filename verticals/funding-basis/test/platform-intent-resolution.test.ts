@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolvePlatformResearchRequest } from "../src/funding-basis.js";
+import { resolvePlatformResearchRequest } from "../src/index.js";
 
 test("resolvePlatformResearchRequest returns an executable read-only report contract for funding research", () => {
   const input = "Find Binance/Bitget funding opportunities and report them";

@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@agentkernel/agent-kernel": "0.1.0",
+    "@agentkernel/funding-basis": "0.1.0",
     "@agentkernel/operations": "0.1.0",
     "@agentkernel/tools": "0.1.0"
   },

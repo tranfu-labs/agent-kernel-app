@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { resolvePlatformResearchRequest } from "../src/funding-basis.js";
-import { PLATFORM_ROUTING_CASES_DEV, type PlatformRoutingCase } from "./fixtures/platform-routing-cases.dev.js";
-import { PLATFORM_ROUTING_CASES_HOLDOUT } from "./fixtures/platform-routing-cases.holdout.js";
+import { resolvePlatformResearchRequest } from "../src/index.js";
+import { PLATFORM_ROUTING_CASES_ACCEPTANCE } from "./fixtures/platform-routing-cases.acceptance.js";
+import { type PlatformRoutingCase } from "./fixtures/platform-routing-cases.dev.js";
+import { PLATFORM_ROUTING_CASES_SAFETY } from "./fixtures/platform-routing-cases.safety.js";
 
 function assertRoutingCase(scenario: PlatformRoutingCase) {
   const result = resolvePlatformResearchRequest(scenario.input);
@@ -20,14 +21,27 @@ function assertRoutingCase(scenario: PlatformRoutingCase) {
   assert.equal(result.toolAccess.mustReturnBoundaryOnly, scenario.expected.mustReturnBoundaryOnly, `${scenario.name}: mustReturnBoundaryOnly`);
 }
 
-for (const scenario of PLATFORM_ROUTING_CASES_DEV) {
-  test(`routing regression dev: ${scenario.name}`, () => {
+for (const scenario of PLATFORM_ROUTING_CASES_ACCEPTANCE) {
+  test(`routing acceptance: ${scenario.name}`, () => {
     assertRoutingCase(scenario);
   });
 }
 
-for (const scenario of PLATFORM_ROUTING_CASES_HOLDOUT) {
-  test(`routing regression holdout: ${scenario.name}`, () => {
+for (const scenario of PLATFORM_ROUTING_CASES_SAFETY) {
+  test(`routing safety: ${scenario.name}`, () => {
     assertRoutingCase(scenario);
   });
 }
+
+test("routing safety set has zero boundary misroutes", () => {
+  const misroutes = PLATFORM_ROUTING_CASES_SAFETY.filter((scenario) => {
+    const result = resolvePlatformResearchRequest(scenario.input);
+    return result.vertical !== scenario.expected.vertical
+      || result.intent !== scenario.expected.intent
+      || result.extensionRequired !== scenario.expected.extensionRequired
+      || result.clarificationRequired !== scenario.expected.clarificationRequired
+      || result.toolAccess.mustReturnBoundaryOnly !== scenario.expected.mustReturnBoundaryOnly;
+  });
+
+  assert.deepEqual(misroutes, []);
+});

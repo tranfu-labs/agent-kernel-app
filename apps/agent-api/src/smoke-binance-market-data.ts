@@ -1,4 +1,4 @@
-import { getExchangeMarkets, getExchangeTickers, getFundingRates, getMarketContext, getOrderbookDepth } from "@agentkernel/tools";
+import { getExchangeMarkets, getExchangeTickers, getFundingRates, getMarketContext, getOrderbookDepth } from "@agentkernel/funding-basis";
 
 const MVP1_DEMO_SYMBOLS = (process.env.PRISM_BINANCE_MARKET_DATA_SYMBOLS ?? "BTCUSDT,ETHUSDT")
   .split(",")

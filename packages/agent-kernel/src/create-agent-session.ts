@@ -22,8 +22,8 @@ export interface CreateKernelAgentSessionOptions {
   cwd?: string;
   /**
    * The vertical to load. Defaults to `GENERIC_ASSISTANT_VERTICAL` — a neutral assistant
-   * with no domain tools. Inject a vertical (e.g. `FUNDING_BASIS_VERTICAL_PLUGIN`) to give
-   * the session a domain identity and tools without editing the kernel core.
+   * with no domain tools. Inject a vertical plugin to give the session a domain identity and
+   * tools without editing the kernel core.
    *
    * Typed over `any` context: a vertical declares its own runtime-context shape, and the
    * kernel invokes `createRuntimeContext`/`createTools` as a matched pair, so the kernel

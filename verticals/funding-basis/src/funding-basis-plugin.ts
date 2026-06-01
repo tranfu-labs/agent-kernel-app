@@ -1,7 +1,7 @@
 import { PRISM_SYSTEM_PROMPT } from "./prism-system-prompt.js";
 import { createPrismRuntimeContext, type PrismRuntimeContext } from "./prism-runtime-context.js";
 import { createPrismToolDefinitions } from "./register-prism-tools.js";
-import type { KernelVertical } from "./vertical.js";
+import type { KernelVertical } from "@agentkernel/agent-kernel";
 
 /**
  * The funding-basis financial vertical, packaged as an injectable `KernelVertical`.

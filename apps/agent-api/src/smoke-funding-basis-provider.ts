@@ -1,6 +1,6 @@
-import { scanFundingBasisArbitrage } from "@agentkernel/operations";
+import { scanFundingBasisArbitrage } from "@agentkernel/funding-basis";
 import type { Artifact, MarketContext, MarketType, Venue } from "@agentkernel/domain";
-import { ExchangeMarketDataService } from "@agentkernel/tools";
+import { ExchangeMarketDataService } from "@agentkernel/funding-basis";
 
 const symbols = (process.env.PRISM_FUNDING_BASIS_SMOKE_SYMBOLS ?? "BTCUSDT,ETHUSDT")
   .split(",")

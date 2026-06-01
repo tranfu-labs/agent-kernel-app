@@ -1,5 +1,5 @@
 import type { Artifact, Opportunity } from "@agentkernel/domain";
-import { createPrismRuntimeContext, createPrismToolDefinitions } from "@agentkernel/agent-kernel/funding-basis";
+import { createPrismRuntimeContext, createPrismToolDefinitions } from "@agentkernel/funding-basis";
 
 const createdAt = "2026-05-30T00:00:00.000Z";
 const context = createPrismRuntimeContext();

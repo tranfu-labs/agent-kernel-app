@@ -7,7 +7,9 @@
   "include": ["src/**/*.ts"],
   "references": [
     { "path": "../../packages/agent-kernel" },
-    { "path": "../../packages/tools" },
-    { "path": "../../verticals/funding-basis" }
+    { "path": "../../packages/domain" },
+    { "path": "../../packages/operations" },
+    { "path": "../../packages/storage" },
+    { "path": "../../packages/tools" }
   ]
 }

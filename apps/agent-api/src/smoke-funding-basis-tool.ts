@@ -1,5 +1,5 @@
-import { createPrismRuntimeContext } from "@agentkernel/agent-kernel/funding-basis";
-import { createPrismToolDefinitions } from "@agentkernel/agent-kernel/funding-basis";
+import { createPrismRuntimeContext } from "@agentkernel/funding-basis";
+import { createPrismToolDefinitions } from "@agentkernel/funding-basis";
 
 const context = createPrismRuntimeContext();
 const tool = createPrismToolDefinitions(context).find((definition) => definition.name === "scan_funding_basis_arbitrage");

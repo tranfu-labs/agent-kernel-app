@@ -25,7 +25,7 @@ export function createKernelRuntimeContext(): KernelRuntimeContext {
  * `agent-kernel` (the Pi-runtime boundary) and not in `domain` (which must not import Pi).
  */
 export interface KernelVertical<Ctx extends KernelRuntimeContext = KernelRuntimeContext> {
-  /** Open identifier, e.g. "general", "funding_basis". Not a closed enum. */
+  /** Open identifier, e.g. "general" or a domain package id. Not a closed enum. */
   id: string;
   /** Product-facing identity + mission, injected as the Pi system prompt. */
   systemPrompt: string;

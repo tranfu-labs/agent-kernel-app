@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolvePlatformFollowup } from "../src/funding-basis.js";
+import { resolvePlatformFollowup } from "../src/index.js";
 
 test("resolvePlatformFollowup requires opportunity artifacts for explain follow-ups", () => {
   const result = resolvePlatformFollowup({

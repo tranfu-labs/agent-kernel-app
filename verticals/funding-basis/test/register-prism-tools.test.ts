@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createPrismRuntimeContext, createPrismToolDefinitions } from "../src/funding-basis.js";
+import { createPrismRuntimeContext, createPrismToolDefinitions } from "../src/index.js";
 
 test("scan_funding_basis_arbitrage is preferred for Binance/Bitget cross-venue discovery", () => {
   const tools = createPrismToolDefinitions(createPrismRuntimeContext());

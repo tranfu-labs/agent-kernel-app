@@ -6,6 +6,7 @@
   "workspaces": [
     "apps/*",
     "packages/*",
+    "verticals/*",
     "legacy-adapters/*"
   ],
   "scripts": {
@@ -28,8 +29,8 @@
     "web:build": "npm run build -w @agentkernel/web",
     "smoke:opportunity-research-report": "npm run build && npm run smoke:opportunity-research-report -w @agentkernel/agent-api",
     "smoke:funding-execution-prep": "npm run build && npm run smoke:funding-execution-prep -w @agentkernel/agent-api",
-    "gate:mvp1-control-plane": "npm run build && npm --workspace @agentkernel/agent-kernel test -- platform-intent-resolution.test.ts platform-followup-resolution.test.ts platform-policy-gate.test.ts platform-tool-access.test.ts platform-routing-regression.test.ts platform-routing-acceptance.test.ts platform-baseline-comparison.test.ts && npm run smoke:platform-control-plane",
-    "gate:mvp1-arbitrage-prep": "npm run build && npm run typecheck && npm --workspace @agentkernel/operations test -- funding-basis-arbitrage.test.ts funding-execution-prep.test.ts funding-risk-gate.test.ts && npm --workspace @agentkernel/agent-kernel test -- platform-intent-resolution.test.ts platform-followup-resolution.test.ts platform-tool-access.test.ts platform-routing-regression.test.ts platform-routing-acceptance.test.ts platform-baseline-comparison.test.ts platform-execution-prep-routing.test.ts register-prism-tools.test.ts && npm run smoke:platform-control-plane && npm run smoke:funding-execution-prep"
+    "gate:mvp1-control-plane": "npm run build && npm --workspace @agentkernel/funding-basis test -- platform-intent-resolution.test.ts platform-followup-resolution.test.ts platform-policy-gate.test.ts platform-tool-access.test.ts platform-routing-regression.test.ts platform-routing-acceptance.test.ts platform-baseline-comparison.test.ts && npm run smoke:platform-control-plane",
+    "gate:mvp1-arbitrage-prep": "npm run build && npm run typecheck && npm --workspace @agentkernel/operations test -- funding-basis-arbitrage.test.ts funding-execution-prep.test.ts funding-risk-gate.test.ts && npm --workspace @agentkernel/funding-basis test -- platform-intent-resolution.test.ts platform-followup-resolution.test.ts platform-tool-access.test.ts platform-routing-regression.test.ts platform-routing-acceptance.test.ts platform-baseline-comparison.test.ts platform-execution-prep-routing.test.ts register-prism-tools.test.ts && npm run smoke:platform-control-plane && npm run smoke:funding-execution-prep"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

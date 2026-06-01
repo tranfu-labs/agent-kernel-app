@@ -25,16 +25,30 @@
 
 ## Phase 2 — Extract `verticals/funding-basis`
 
-- [ ] **Pre-flight (m1):** regenerate the move inventory from a live `ls/grep`, diff against the design table, resolve discrepancies before moving any file.
-- [ ] Create `verticals/funding-basis` package; add to root `package.json` workspaces and `tsconfig.json` references.
-- [ ] Move financial files per the verified design inventory (financial domain types incl. `signal`/`comparison`/`execution`/`execution-prep`/`trade-proposal`, `source-family` audit; `funding-basis-copilot-guidance`; all `platform-*`; operations; tools; skills; funding tools/prompt/context; session-artifact-references).
-- [ ] Audit `source-family.ts` (imports `market-data`) and `signal-artifact.ts` (`opportunityRef?`): genericize the venue/opportunity reference out to keep in base, else move.
-- [ ] **Artifact genericization (M4):** add generic `links?: Record<string,string[]>` to base `Artifact`; move named funding slots (`opportunityIds/marketContextIds/comparisonIds/...`) + funding family constants (`opportunity_artifact/market_context_snapshot/comparison_artifact`) into a funding `Artifact` extension; base `ARTIFACT_FAMILY_TYPES` keeps cross-industry families only.
-- [ ] **PlatformVertical (M3):** move `PlatformVertical` + `platform-vertical-resolution` regex wholesale into the vertical; confirm base exposes no vertical enumeration.
+### Phase 2a — Extract the funding control plane out of `agent-kernel` (DONE, green)
+
+- [x] **Pre-flight (m1):** regenerate the move inventory from a live `ls/grep`, diff against the design table, resolve discrepancies before moving any file.
+- [x] Create `verticals/funding-basis` package; add to root `package.json` workspaces and `tsconfig.json` references.
+- [x] Move the funding control-plane + tool-registration files out of `agent-kernel/src`: `funding-basis-plugin`, `funding-basis(.ts → index.ts)`, all `platform-*`, `prism-system-prompt`, `prism-runtime-context`, `register-prism-tools`, `session-artifact-references`, `funding-basis-copilot-guidance`, `path-guidance`.
+- [x] `FUNDING_BASIS_VERTICAL_PLUGIN` now lives in the vertical package; the only base import (`./vertical.js`) repointed to `@agentkernel/agent-kernel`.
+- [x] Make the vertical package the app-facing migration surface: re-export `@agentkernel/operations` + `@agentkernel/tools`; rewire 7 smokes + 8 tests + web off the kernel barrel onto `@agentkernel/funding-basis`.
+- [x] Migrate the funding tests (12 files + fixtures) into the vertical package; keep base `create-agent-session.test.ts` funding-free (stub vertical).
+- [x] Drop `agent-kernel` deps/refs on `operations`/`tools`; remove the `./funding-basis` subpath export.
+- [x] **X2b:** `packages/agent-kernel/src` raw grep clean of `prism|funding|venue|opportunity` (incl. comments).
+- [x] Verify: `npm build` + `typecheck` + `npm test` (196 pass) + `smoke:generic` + `web:build` green.
+
+### Phase 2b — Genericize `domain` and relocate financial operations/tools (DEFERRED — needs design)
+
+> **Decision (recorded):** A first attempt to move the financial `domain` types (`market-data`, `opportunity`, `signal`, `comparison`, `execution`, `execution-prep`, `trade-proposal`, `source-family`) into the vertical while leaving compatibility shims in `@agentkernel/domain` created a **`domain ↔ funding-basis` circular dependency** (operations/tools still import these types from `@agentkernel/domain`, and the vertical depends on operations/tools). Reverted to keep the tree green. The clean fix is a dedicated low-level `@agentkernel/funding-domain` package that `operations`/`tools`/the vertical all depend on — to be designed before moving. Tracked here, not silently complete.
+
+- [ ] Introduce `@agentkernel/funding-domain` (no dep on operations/tools); move the financial `domain` types there; repoint `operations`/`tools`/vertical imports.
+- [ ] Audit `source-family.ts` / `signal-artifact.ts`: genericize the venue/opportunity reference out to keep in base, else move.
+- [ ] **Artifact genericization (M4):** add generic `links?: Record<string,string[]>` to base `Artifact`; move named funding slots + funding family constants into a funding `Artifact` extension; base `ARTIFACT_FAMILY_TYPES` keeps cross-industry families only.
+- [ ] **PlatformVertical (M3):** move `PlatformVertical` + `platform-vertical-resolution` regex wholesale into the vertical; confirm base `domain` exposes no vertical enumeration (`ResearchVertical` stays open string).
 - [ ] **m2 decision:** quarantine `platform-*` under `verticals/funding-basis/experimental/` (own smoke) or delete if unreferenced by the live loop; record the decision.
-- [ ] `FUNDING_BASIS_VERTICAL_PLUGIN` now built from the vertical package; export `FUNDING_BASIS_VERTICAL` declaration from the vertical (remove from base `domain/vertical-plugin.ts`).
-- [ ] Migrate the corresponding tests into the vertical package; ensure root `npm test` still aggregates green.
-- [ ] Re-run X2b: whole `agent-kernel/src` grep clean of funding/venue/opportunity/prism.
+- [ ] Relocate `operations`/`tools`/`policies`/`skills` directories under `verticals/funding-basis` (or rename to funding-scoped packages); update workspaces/refs.
+- [ ] Export `FUNDING_BASIS_VERTICAL` declaration from the vertical (remove from base `domain/vertical-plugin.ts`).
+- [ ] Re-run a whole-base grep: `packages/domain/src` + `packages/agent-kernel/src` clean of funding/venue/opportunity.
 
 ## Phase 3 — De-Prism naming
 

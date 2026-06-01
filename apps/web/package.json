@@ -13,6 +13,7 @@
     "@copilotkit/react-core": "^1.10.6",
     "@copilotkit/runtime": "^1.59.2",
     "@agentkernel/agent-kernel": "0.1.0",
+    "@agentkernel/funding-basis": "0.1.0",
     "@agentkernel/agui-bridge": "0.1.0",
     "next": "15.3.9",
     "react": "19.1.0",

@@ -1,7 +1,7 @@
-// Funding-basis reference vertical — the financial example domain, exposed via the
-// "@agentkernel/agent-kernel/funding-basis" subpath. In a later phase these symbols relocate
-// into a standalone `verticals/funding-basis` package; this barrel is the migration seam so
-// consumers depend on the vertical surface, not on the kernel core barrel.
+// Funding-basis reference vertical — the financial example domain exposed as
+// `@agentkernel/funding-basis`. This is the migration surface for funding-specific prompt,
+// tools, routing, operations, and market-data helpers so consumers do not depend on the
+// domain-free kernel core.
 export * from "./funding-basis-plugin.js";
 export * from "./prism-runtime-context.js";
 export * from "./prism-system-prompt.js";
@@ -16,3 +16,8 @@ export * from "./platform-policy-gate.js";
 export * from "./platform-tool-access.js";
 export * from "./platform-vertical-resolution.js";
 export * from "./funding-basis-copilot-guidance.js";
+
+// Funding operations/tools migration surface. Phase 2 makes consumers depend on the vertical
+// package first; later file moves can be internal to this package without changing callers.
+export * from "@agentkernel/operations";
+export * from "@agentkernel/tools";

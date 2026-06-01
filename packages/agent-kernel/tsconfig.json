@@ -7,8 +7,6 @@
   "include": ["src/**/*.ts"],
   "references": [
     { "path": "../domain" },
-    { "path": "../operations" },
-    { "path": "../storage" },
-    { "path": "../tools" }
+    { "path": "../storage" }
   ]
 }
