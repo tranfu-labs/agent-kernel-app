@@ -1,6 +1,6 @@
 Find current market opportunities for: {{scope}}
 
-Use Prism tools for all realtime facts. Return structured opportunity cards with:
+Use funding-basis tools for all realtime facts. Return structured opportunity cards with:
 
 - type
 - venues

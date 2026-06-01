@@ -26,7 +26,7 @@ export function resolvePlatformPolicyGate(input: PlatformPolicyGateInput): Platf
       extensionRequired: true,
       executionAllowed: false,
       boundaryExplanation:
-        "Prism MVP1 keeps prediction-market requests at a strict read-only boundary and does not allow wallet access, participation, or bet placement.",
+        "Funding-basis MVP keeps prediction-market requests at a strict read-only boundary and does not allow wallet access, participation, or bet placement.",
     };
   }
 
@@ -36,7 +36,7 @@ export function resolvePlatformPolicyGate(input: PlatformPolicyGateInput): Platf
       extensionRequired: false,
       executionAllowed: false,
       boundaryExplanation:
-        "Prism MVP1 only authorizes deterministic read-only funding-basis research backed by approved tools and requires proposals before any execution outside the contract.",
+        "Funding-basis MVP only authorizes deterministic read-only funding-basis research backed by approved tools and requires proposals before any execution outside the contract.",
     };
   }
 
@@ -45,6 +45,6 @@ export function resolvePlatformPolicyGate(input: PlatformPolicyGateInput): Platf
     extensionRequired: false,
     executionAllowed: false,
     boundaryExplanation:
-      "Prism MVP1 requires clarification before routing general requests into any specialized research workflow.",
+      "Funding-basis MVP requires clarification before routing general requests into any specialized research workflow.",
   };
 }

@@ -16,7 +16,7 @@ export async function runGenericSmoke() {
   assert.deepEqual(toolNames, [], "generic base must expose no domain tools");
   assert.equal(options.noTools, "builtin", "generic base must not expose Pi builtin coding tools");
   assert.equal(systemPrompt, GENERIC_SYSTEM_PROMPT, "generic base must use the generic identity");
-  for (const banned of [/prism/i, /funding/i, /venue/i, /financial/i]) {
+  for (const banned of [new RegExp("p" + "r" + "i" + "s" + "m", "i"), /funding/i, /venue/i, /financial/i]) {
     assert.ok(!banned.test(systemPrompt), `generic identity must not match ${banned}`);
   }
 

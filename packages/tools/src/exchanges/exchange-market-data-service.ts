@@ -142,10 +142,10 @@ export class ExchangeMarketDataService {
 
   constructor(options: ExchangeMarketDataServiceOptions = {}) {
     this.binanceProvider = options.binanceProvider ?? new BinanceUsdsFuturesProvider({
-      baseUrl: process.env.PRISM_BINANCE_USDS_FUTURES_BASE_URL,
+      baseUrl: process.env.FUNDING_BASIS_BINANCE_USDS_FUTURES_BASE_URL,
     });
     this.bitgetProvider = options.bitgetProvider ?? new BitgetUsdtFuturesProvider({
-      baseUrl: process.env.PRISM_BITGET_USDT_FUTURES_BASE_URL,
+      baseUrl: process.env.FUNDING_BASIS_BITGET_USDT_FUTURES_BASE_URL,
     });
   }
 

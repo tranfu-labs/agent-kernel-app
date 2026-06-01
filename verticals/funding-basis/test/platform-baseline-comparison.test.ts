@@ -14,7 +14,7 @@ interface BaselineResult {
   extensionRequired: boolean;
 }
 
-test("Prism routing matches or exceeds the frozen raw Pi Agent baseline on locked acceptance cases", () => {
+test("Funding Basis routing matches or exceeds the frozen raw Pi Agent baseline on locked acceptance cases", () => {
   const baselineMap = new Map((baseline as BaselineResult[]).map((item) => [item.name, item]));
 
   for (const scenario of PLATFORM_ROUTING_CASES_ACCEPTANCE) {

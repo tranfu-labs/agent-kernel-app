@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createPrismRuntimeContext, createPrismToolDefinitions } from "../src/index.js";
+import { createFundingBasisRuntimeContext, createFundingBasisToolDefinitions } from "../src/index.js";
 
 test("scan_funding_basis_arbitrage is preferred for Binance/Bitget cross-venue discovery", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const scanner = tools.find((tool) => tool.name === "scan_funding_basis_arbitrage");
   const marketContext = tools.find((tool) => tool.name === "get_market_context");
 
@@ -26,8 +26,8 @@ test("scan_funding_basis_arbitrage is preferred for Binance/Bitget cross-venue d
 });
 
 test("tool guidance references bounded orchestration templates", () => {
-  const context = createPrismRuntimeContext();
-  const tools = createPrismToolDefinitions(context);
+  const context = createFundingBasisRuntimeContext();
+  const tools = createFundingBasisToolDefinitions(context);
   const scanner = tools.find((tool) => tool.name === "scan_funding_basis_arbitrage");
   const report = tools.find((tool) => tool.name === "generate_opportunity_research_report");
 
@@ -42,7 +42,7 @@ test("tool guidance references bounded orchestration templates", () => {
 });
 
 test("scan_funding_basis_arbitrage schema stays read-only", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const scanner = tools.find((tool) => tool.name === "scan_funding_basis_arbitrage");
 
   assert.ok(scanner);
@@ -54,7 +54,7 @@ test("scan_funding_basis_arbitrage schema stays read-only", () => {
 });
 
 test("resolve_opportunity_artifact_reference maps recent session references to artifact IDs", async () => {
-  const context = createPrismRuntimeContext();
+  const context = createFundingBasisRuntimeContext();
   context.artifactReferences.replaceFromOpportunityCards([
     {
       opportunityId: "opp_ETHUSDT_binance_bitget",
@@ -62,7 +62,7 @@ test("resolve_opportunity_artifact_reference maps recent session references to a
       symbol: "ETHUSDT",
     },
   ]);
-  const tools = createPrismToolDefinitions(context);
+  const tools = createFundingBasisToolDefinitions(context);
   const resolver = tools.find((tool) => tool.name === "resolve_opportunity_artifact_reference");
 
   assert.ok(resolver);
@@ -81,7 +81,7 @@ test("resolve_opportunity_artifact_reference maps recent session references to a
 });
 
 test("resolve_opportunity_artifact_reference schema stays read-only", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const resolver = tools.find((tool) => tool.name === "resolve_opportunity_artifact_reference");
 
   assert.ok(resolver);
@@ -96,7 +96,7 @@ test("resolve_opportunity_artifact_reference schema stays read-only", () => {
 });
 
 test("explain_opportunity_artifact is registered as an artifact-backed read-only explanation tool", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const explanation = tools.find((tool) => tool.name === "explain_opportunity_artifact");
 
   assert.ok(explanation);
@@ -108,7 +108,7 @@ test("explain_opportunity_artifact is registered as an artifact-backed read-only
 });
 
 test("explain_opportunity_artifact schema contains only artifactId", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const explanation = tools.find((tool) => tool.name === "explain_opportunity_artifact");
 
   assert.ok(explanation);
@@ -121,7 +121,7 @@ test("explain_opportunity_artifact schema contains only artifactId", () => {
 });
 
 test("generate_opportunity_research_report is registered as an artifact-backed read-only report tool", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const report = tools.find((tool) => tool.name === "generate_opportunity_research_report");
 
   assert.ok(report);
@@ -134,7 +134,7 @@ test("generate_opportunity_research_report is registered as an artifact-backed r
 });
 
 test("generate_opportunity_research_report schema contains only artifactId", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const report = tools.find((tool) => tool.name === "generate_opportunity_research_report");
 
   assert.ok(report);
@@ -147,7 +147,7 @@ test("generate_opportunity_research_report schema contains only artifactId", () 
 });
 
 test("generate_funding_execution_prep is registered as an artifact-backed read-only prep tool", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const prep = tools.find((tool) => tool.name === "generate_funding_execution_prep");
 
   assert.ok(prep);
@@ -160,7 +160,7 @@ test("generate_funding_execution_prep is registered as an artifact-backed read-o
 });
 
 test("generate_funding_execution_prep schema stays read-only and artifact-scoped", () => {
-  const tools = createPrismToolDefinitions(createPrismRuntimeContext());
+  const tools = createFundingBasisToolDefinitions(createFundingBasisRuntimeContext());
   const prep = tools.find((tool) => tool.name === "generate_funding_execution_prep");
 
   assert.ok(prep);
@@ -173,7 +173,7 @@ test("generate_funding_execution_prep schema stays read-only and artifact-scoped
 });
 
 test("generate_funding_execution_prep returns deterministic prep from saved session context", async () => {
-  const context = createPrismRuntimeContext();
+  const context = createFundingBasisRuntimeContext();
   context.artifactReferences.replaceFromOpportunityCards([
     {
       opportunityId: "opp_ETHUSDT_binance_bitget",
@@ -267,7 +267,7 @@ test("generate_funding_execution_prep returns deterministic prep from saved sess
     },
   ]);
 
-  const tools = createPrismToolDefinitions(context);
+  const tools = createFundingBasisToolDefinitions(context);
   const prep = tools.find((tool) => tool.name === "generate_funding_execution_prep");
 
   assert.ok(prep);

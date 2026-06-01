@@ -21,7 +21,7 @@ export type VenueMarketContextEnvelope = FactEnvelope<MarketContext[]> & {
 /**
  * Minimal proving-family query service. It delegates to the existing
  * ExchangeMarketDataService backend and wraps the normalized MarketContext output in a
- * Prism-owned source-family envelope. Slice 1 keeps behavior additive and non-breaking.
+ * Funding-basis source-family envelope. Slice 1 keeps behavior additive and non-breaking.
  */
 export class VenueMarketDataQueryService {
   constructor(private readonly exchangeService: Pick<ExchangeMarketDataService, "getMarketContext"> = defaultExchangeMarketDataService) {}

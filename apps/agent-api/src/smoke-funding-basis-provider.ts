@@ -2,12 +2,12 @@ import { scanFundingBasisArbitrage } from "@agentkernel/funding-basis";
 import type { Artifact, MarketContext, MarketType, Venue } from "@agentkernel/domain";
 import { ExchangeMarketDataService } from "@agentkernel/funding-basis";
 
-const symbols = (process.env.PRISM_FUNDING_BASIS_SMOKE_SYMBOLS ?? "BTCUSDT,ETHUSDT")
+const symbols = (process.env.FUNDING_BASIS_SMOKE_SYMBOLS ?? "BTCUSDT,ETHUSDT")
   .split(",")
   .map((symbol) => symbol.trim())
   .filter(Boolean);
-const estimatedFeeBps = Number(process.env.PRISM_FUNDING_BASIS_SMOKE_FEE_BPS ?? "4");
-const targetNotionalUsd = Number(process.env.PRISM_FUNDING_BASIS_SMOKE_NOTIONAL_USD ?? "1000");
+const estimatedFeeBps = Number(process.env.FUNDING_BASIS_SMOKE_FEE_BPS ?? "4");
+const targetNotionalUsd = Number(process.env.FUNDING_BASIS_SMOKE_NOTIONAL_USD ?? "1000");
 
 const service = new ExchangeMarketDataService();
 const savedArtifacts: Artifact[] = [];

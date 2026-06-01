@@ -21,7 +21,7 @@ import {
 import { Type } from "typebox";
 
 import { PATH_GUIDANCE } from "./path-guidance.js";
-import type { PrismRuntimeContext } from "./prism-runtime-context.js";
+import type { FundingBasisRuntimeContext } from "./runtime-context.js";
 
 function jsonToolResult(details: unknown) {
   return {
@@ -30,7 +30,7 @@ function jsonToolResult(details: unknown) {
   };
 }
 
-export function createPrismToolDefinitions(ctx: PrismRuntimeContext): ToolDefinition[] {
+export function createFundingBasisToolDefinitions(ctx: FundingBasisRuntimeContext): ToolDefinition[] {
   const getFundingRatesTool = defineTool({
     name: "get_funding_rates",
     label: "Get Funding Rates",
@@ -428,7 +428,7 @@ export function createPrismToolDefinitions(ctx: PrismRuntimeContext): ToolDefini
   const saveOpportunityArtifactTool = defineTool({
     name: "save_opportunity_artifact",
     label: "Save Opportunity Artifact",
-    description: "Materialize an opportunity as a durable Prism artifact. Use after a candidate opportunity has been calculated and ranked.",
+    description: "Materialize an opportunity as a durable Funding Basis artifact. Use after a candidate opportunity has been calculated and ranked.",
     promptSnippet: "Use save_opportunity_artifact to materialize worthwhile opportunities.",
     promptGuidelines: ["Important opportunity outputs should be saved as artifacts, not only described in chat."],
     parameters: Type.Object({

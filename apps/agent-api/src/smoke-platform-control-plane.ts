@@ -1,11 +1,11 @@
 import {
-  createPrismRuntimeContext,
-  createPrismToolDefinitions,
+  createFundingBasisRuntimeContext,
+  createFundingBasisToolDefinitions,
   resolvePlatformResearchRequest,
 } from "@agentkernel/funding-basis";
 
-const context = createPrismRuntimeContext();
-const tools = createPrismToolDefinitions(context);
+const context = createFundingBasisRuntimeContext();
+const tools = createFundingBasisToolDefinitions(context);
 const toolNames = new Set(tools.map((tool) => tool.name));
 
 const scenarios = [

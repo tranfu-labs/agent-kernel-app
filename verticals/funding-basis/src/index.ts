@@ -3,9 +3,9 @@
 // tools, routing, operations, and market-data helpers so consumers do not depend on the
 // domain-free kernel core.
 export * from "./funding-basis-plugin.js";
-export * from "./prism-runtime-context.js";
-export * from "./prism-system-prompt.js";
-export * from "./register-prism-tools.js";
+export * from "./runtime-context.js";
+export * from "./funding-system-prompt.js";
+export * from "./funding-basis-tools.js";
 export * from "./session-artifact-references.js";
 export * from "./path-guidance.js";
 export * from "./platform-followup-resolution.js";

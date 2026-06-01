@@ -5,9 +5,9 @@ import { AuthStorage, ModelRegistry } from "@earendil-works/pi-coding-agent";
 import { buildAgentSessionOptions, createKernelAgentSession } from "@agentkernel/agent-kernel";
 
 import { FUNDING_BASIS_VERTICAL_PLUGIN } from "../src/index.js";
-import { PRISM_SYSTEM_PROMPT } from "../src/prism-system-prompt.js";
-import { createPrismRuntimeContext } from "../src/prism-runtime-context.js";
-import { createPrismToolDefinitions } from "../src/register-prism-tools.js";
+import { FUNDING_BASIS_SYSTEM_PROMPT } from "../src/funding-system-prompt.js";
+import { createFundingBasisRuntimeContext } from "../src/runtime-context.js";
+import { createFundingBasisToolDefinitions } from "../src/funding-basis-tools.js";
 
 test("T5: FUNDING_BASIS_VERTICAL_PLUGIN reproduces the funding tool set and identity", async () => {
   const authStorage = AuthStorage.inMemory();
@@ -19,10 +19,10 @@ test("T5: FUNDING_BASIS_VERTICAL_PLUGIN reproduces the funding tool set and iden
     vertical: FUNDING_BASIS_VERTICAL_PLUGIN,
   });
 
-  assert.equal(options.resourceLoader?.getSystemPrompt(), PRISM_SYSTEM_PROMPT);
+  assert.equal(options.resourceLoader?.getSystemPrompt(), FUNDING_BASIS_SYSTEM_PROMPT);
   assert.deepEqual(
     options.customTools?.map((tool) => tool.name).sort(),
-    createPrismToolDefinitions(createPrismRuntimeContext()).map((tool) => tool.name).sort(),
+    createFundingBasisToolDefinitions(createFundingBasisRuntimeContext()).map((tool) => tool.name).sort(),
   );
 });
 
@@ -32,6 +32,6 @@ test("the funding vertical injects the funding identity into a live session", as
     cwd: "/tmp/agentkernel-funding-live-test",
     vertical: FUNDING_BASIS_VERTICAL_PLUGIN,
   });
-  assert.match(session.state.systemPrompt, /You are Prism, a collaborative financial research manager/);
+  assert.match(session.state.systemPrompt, /You are the Funding Basis vertical, a collaborative financial research manager/);
   session.dispose();
 });

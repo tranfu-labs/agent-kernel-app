@@ -1,6 +1,6 @@
-import { PRISM_SYSTEM_PROMPT } from "./prism-system-prompt.js";
-import { createPrismRuntimeContext, type PrismRuntimeContext } from "./prism-runtime-context.js";
-import { createPrismToolDefinitions } from "./register-prism-tools.js";
+import { FUNDING_BASIS_SYSTEM_PROMPT } from "./funding-system-prompt.js";
+import { createFundingBasisRuntimeContext, type FundingBasisRuntimeContext } from "./runtime-context.js";
+import { createFundingBasisToolDefinitions } from "./funding-basis-tools.js";
 import type { KernelVertical } from "@agentkernel/agent-kernel";
 
 /**
@@ -10,11 +10,11 @@ import type { KernelVertical } from "@agentkernel/agent-kernel";
  * context) so callers opt into the financial agent explicitly via
  * `createKernelAgentSession({ vertical: FUNDING_BASIS_VERTICAL_PLUGIN })`, instead of the
  * kernel hardcoding them as the default. Later phases physically relocate these symbols
- * into a `verticals/funding-basis` package and rename them off the `Prism` identifier.
+ * into a standalone `verticals/funding-basis` package.
  */
-export const FUNDING_BASIS_VERTICAL_PLUGIN: KernelVertical<PrismRuntimeContext> = {
+export const FUNDING_BASIS_VERTICAL_PLUGIN: KernelVertical<FundingBasisRuntimeContext> = {
   id: "funding_basis",
-  systemPrompt: PRISM_SYSTEM_PROMPT,
-  createRuntimeContext: createPrismRuntimeContext,
-  createTools: (ctx) => createPrismToolDefinitions(ctx),
+  systemPrompt: FUNDING_BASIS_SYSTEM_PROMPT,
+  createRuntimeContext: createFundingBasisRuntimeContext,
+  createTools: (ctx) => createFundingBasisToolDefinitions(ctx),
 };

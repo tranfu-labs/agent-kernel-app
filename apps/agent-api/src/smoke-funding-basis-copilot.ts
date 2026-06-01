@@ -1,11 +1,11 @@
 import {
-  createPrismRuntimeContext,
-  createPrismToolDefinitions,
+  createFundingBasisRuntimeContext,
+  createFundingBasisToolDefinitions,
   resolveFundingBasisCopilotRequest,
 } from "@agentkernel/funding-basis";
 
-const context = createPrismRuntimeContext();
-const tools = createPrismToolDefinitions(context);
+const context = createFundingBasisRuntimeContext();
+const tools = createFundingBasisToolDefinitions(context);
 const scanner = tools.find((definition) => definition.name === "scan_funding_basis_arbitrage");
 const marketContext = tools.find((definition) => definition.name === "get_market_context");
 const explanation = tools.find((definition) => definition.name === "explain_opportunity_artifact");

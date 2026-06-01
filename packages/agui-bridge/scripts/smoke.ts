@@ -64,7 +64,7 @@ async function main(): Promise<void> {
   const apiKey = process.env.CLOUDAIKEY_API_KEY;
   const modelId = process.env.CLOUDAIKEY_MODEL;
   const baseUrl = process.env.CLOUDAIKEY_BASE_URL ?? "https://api.cloudaikey.com/v1";
-  const prompt = process.env.SMOKE_PROMPT ?? "Say hello to Prism in exactly five words.";
+  const prompt = process.env.SMOKE_PROMPT ?? "Say hello to AgentKernel in exactly five words.";
 
   if (!apiKey || !modelId) {
     console.error("✗ .env.smoke must set CLOUDAIKEY_API_KEY and CLOUDAIKEY_MODEL");
@@ -82,8 +82,8 @@ async function main(): Promise<void> {
     baseUrl,
   });
 
-  // Real Prism factory (prism tools + system prompt) with the cloudaikey model injected.
-  // SMOKE_MINIMAL=1 uses a bare session (no Prism tools) to verify the streaming bridge
+  // Real funding-basis factory (funding-basis tools + system prompt) with the cloudaikey model injected.
+  // SMOKE_MINIMAL=1 uses a bare session (no funding-basis tools) to verify the streaming bridge
   // in isolation — useful when a domain tool's schema is rejected by the provider.
   const minimal = process.env.SMOKE_MINIMAL === "1";
   const store = new WarmSessionStore(
@@ -104,7 +104,7 @@ async function main(): Promise<void> {
     { sweepMs: 0 },
   );
   const agent = new KernelAgent({ store });
-  console.log(`• mode: ${minimal ? "MINIMAL (no tools)" : "FULL (prism tools)"}`);
+  console.log(`• mode: ${minimal ? "MINIMAL (no tools)" : "FULL (funding-basis tools)"}`);
 
   console.log(`• prompt: ${JSON.stringify(prompt)}\n• streaming AG-UI events:\n`);
 

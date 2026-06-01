@@ -36,7 +36,7 @@ interface ToolCallStream {
 /**
  * Stateful, per-run translator from Pi `AgentSessionEvent`s to AG-UI events.
  *
- * Design rules (see packages/../prism-docs/COPILOTKIT_INTEGRATION_PLAN.md §2.2):
+ * Design rules (see docs/archived-funding-basis/COPILOTKIT_INTEGRATION_PLAN.md §2.2):
  *  - Drive text/tool-call streaming from the nested `assistantMessageEvent` ONLY;
  *    `message_start`/`message_end` are lifecycle anchors (driving from both double-emits).
  *  - Every START gets a matching END before RUN_FINISHED / RUN_ERROR.

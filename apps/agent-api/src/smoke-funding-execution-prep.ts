@@ -1,7 +1,7 @@
-import { createPrismRuntimeContext, createPrismToolDefinitions } from "@agentkernel/funding-basis";
+import { createFundingBasisRuntimeContext, createFundingBasisToolDefinitions } from "@agentkernel/funding-basis";
 
 const createdAt = "2026-05-31T00:00:00.000Z";
-const context = createPrismRuntimeContext();
+const context = createFundingBasisRuntimeContext();
 context.artifactReferences.replaceFromOpportunityCards([
   {
     opportunityId: "opp_ETHUSDT_binance_bitget",
@@ -96,7 +96,7 @@ context.artifactReferences.replaceFundingPrepRecords([
   },
 ]);
 
-const tools = createPrismToolDefinitions(context);
+const tools = createFundingBasisToolDefinitions(context);
 const prepTool = tools.find((definition) => definition.name === "generate_funding_execution_prep");
 
 if (!prepTool) {

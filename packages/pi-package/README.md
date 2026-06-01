@@ -5,7 +5,7 @@ Prism capability package for users who want to use Pi Agent directly.
 This package will provide:
 
 - Prism domain skills
-- Prism tools extension
+- funding-basis tools extension
 - Prism permission gates
 - Prism prompt templates
 

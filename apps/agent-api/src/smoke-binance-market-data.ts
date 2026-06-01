@@ -1,6 +1,6 @@
 import { getExchangeMarkets, getExchangeTickers, getFundingRates, getMarketContext, getOrderbookDepth } from "@agentkernel/funding-basis";
 
-const MVP1_DEMO_SYMBOLS = (process.env.PRISM_BINANCE_MARKET_DATA_SYMBOLS ?? "BTCUSDT,ETHUSDT")
+const MVP1_DEMO_SYMBOLS = (process.env.FUNDING_BASIS_BINANCE_MARKET_DATA_SYMBOLS ?? "BTCUSDT,ETHUSDT")
   .split(",")
   .map((symbol) => symbol.trim())
   .filter(Boolean);
@@ -40,7 +40,7 @@ export async function runBinanceMarketDataSmoke() {
   };
 
   return {
-    baseUrl: process.env.PRISM_BINANCE_USDS_FUTURES_BASE_URL ?? "https://fapi.binance.com",
+    baseUrl: process.env.FUNDING_BASIS_BINANCE_USDS_FUTURES_BASE_URL ?? "https://fapi.binance.com",
     symbols: MVP1_DEMO_SYMBOLS,
     markets: {
       status: calls.markets.status,

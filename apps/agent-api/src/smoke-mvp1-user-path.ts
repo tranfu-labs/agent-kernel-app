@@ -1,12 +1,12 @@
 import {
-  createPrismRuntimeContext,
-  createPrismToolDefinitions,
+  createFundingBasisRuntimeContext,
+  createFundingBasisToolDefinitions,
   resolvePlatformResearchRequest,
 } from "@agentkernel/funding-basis";
 import type { FetchStatus } from "@agentkernel/domain";
 
-const context = createPrismRuntimeContext();
-const tools = createPrismToolDefinitions(context);
+const context = createFundingBasisRuntimeContext();
+const tools = createFundingBasisToolDefinitions(context);
 const toolByName = new Map(tools.map((tool) => [tool.name, tool] as const));
 
 const discoverRequest = resolvePlatformResearchRequest("Find Binance/Bitget funding opportunities");
@@ -24,13 +24,13 @@ const discoverResult = await discoverTool.execute(
   "smoke-mvp1-user-path-discover",
   {
     venues: ["binance", "bitget"],
-    symbols: (process.env.PRISM_MVP1_USER_PATH_SYMBOLS ?? "BTCUSDT,ETHUSDT")
+    symbols: (process.env.FUNDING_BASIS_MVP1_USER_PATH_SYMBOLS ?? "BTCUSDT,ETHUSDT")
       .split(",")
       .map((symbol) => symbol.trim())
       .filter(Boolean),
     marketType: "linear_perp",
-    estimatedFeeBps: Number(process.env.PRISM_FUNDING_BASIS_SMOKE_FEE_BPS ?? "4"),
-    targetNotionalUsd: Number(process.env.PRISM_FUNDING_BASIS_SMOKE_NOTIONAL_USD ?? "1000"),
+    estimatedFeeBps: Number(process.env.FUNDING_BASIS_SMOKE_FEE_BPS ?? "4"),
+    targetNotionalUsd: Number(process.env.FUNDING_BASIS_SMOKE_NOTIONAL_USD ?? "1000"),
     saveArtifacts: true,
   },
   undefined,

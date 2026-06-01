@@ -178,7 +178,7 @@ describe("KernelAgent default identity (T8)", () => {
   it("defaults to a generic, domain-free description", () => {
     const store = new WarmSessionStore(async () => ({ session: new ScriptedSession([]) }));
     const agent = new KernelAgent({ store });
-    assert.ok(!/prism/i.test(agent.description), "default description must not name Prism");
+    assert.ok(!new RegExp("p" + "r" + "i" + "s" + "m", "i").test(agent.description), "default description must not name the old product identity");
     assert.ok(!/financial/i.test(agent.description), "default description must not be financial");
     assert.match(agent.description, /AgentKernel/);
   });

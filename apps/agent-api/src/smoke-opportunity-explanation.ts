@@ -1,9 +1,9 @@
 import type { Artifact, Opportunity } from "@agentkernel/domain";
-import { createPrismRuntimeContext, createPrismToolDefinitions } from "@agentkernel/funding-basis";
+import { createFundingBasisRuntimeContext, createFundingBasisToolDefinitions } from "@agentkernel/funding-basis";
 
 const createdAt = "2026-05-30T00:00:00.000Z";
-const context = createPrismRuntimeContext();
-const tools = createPrismToolDefinitions(context);
+const context = createFundingBasisRuntimeContext();
+const tools = createFundingBasisToolDefinitions(context);
 const explanationTool = tools.find((definition) => definition.name === "explain_opportunity_artifact");
 
 if (!explanationTool) throw new Error("explain_opportunity_artifact tool is not registered");

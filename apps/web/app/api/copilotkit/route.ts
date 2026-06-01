@@ -2,7 +2,7 @@ import { CopilotRuntime, createCopilotRuntimeHandler } from "@copilotkit/runtime
 
 import { agent } from "../../../lib/agent-runtime";
 
-// In-process topology (plan §3): register the Prism agent directly — no network HttpAgent,
+// In-process topology (plan §3): register the AgentKernel agent directly — no network HttpAgent,
 // no separate agent-api service. CopilotRuntime stays as the server-side trust boundary.
 // Requires a persistent Node process (`next start`), since the agent holds warm Pi sessions.
 const runtime = new CopilotRuntime({

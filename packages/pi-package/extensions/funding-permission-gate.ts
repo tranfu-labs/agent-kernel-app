@@ -6,7 +6,7 @@ const EXECUTION_TOOL_NAMES = new Set([
   "close_position",
 ]);
 
-export default function prismPermissionGate(pi: ExtensionAPI) {
+export default function fundingPermissionGate(pi: ExtensionAPI) {
   pi.on("tool_call", async (event, ctx) => {
     if (!EXECUTION_TOOL_NAMES.has(event.toolName)) return undefined;
 
@@ -18,7 +18,7 @@ export default function prismPermissionGate(pi: ExtensionAPI) {
     }
 
     const choice = await ctx.ui.select(
-      `Prism execution tool requested: ${event.toolName}\n\nAllow this tool call?`,
+      `Funding-basis execution tool requested: ${event.toolName}\n\nAllow this tool call?`,
       ["No", "Yes"],
     );
 

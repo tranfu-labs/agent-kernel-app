@@ -88,7 +88,7 @@ async function main(): Promise<void> {
   });
 
   try {
-    await session.prompt(process.env.SMOKE_PROMPT ?? "用五个字向 Prism 打个招呼");
+    await session.prompt(process.env.SMOKE_PROMPT ?? "用五个字向 AgentKernel 打个招呼");
   } catch (err) {
     console.log("  prompt threw:", err instanceof Error ? err.message : err);
   }
