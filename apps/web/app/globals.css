@@ -38,6 +38,11 @@ body {
   pointer-events: none;
 }
 
+[data-testid="copilot-add-menu-button"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .ak-model-menu__trigger {
   position: absolute;
   inset: 0;
@@ -46,22 +51,35 @@ body {
   justify-content: center;
   border: 0;
   border-radius: 999px;
-  background: transparent;
-  color: #444444;
+  background: rgba(255, 255, 255, 0.92);
+  color: #334155;
   font: inherit;
   pointer-events: auto;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .ak-model-menu__trigger:hover {
-  background: #f8f8f8;
-  color: #333333;
+  background: #f8fafc;
+  color: #0f172a;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12), inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.ak-model-menu__trigger:active {
+  transform: translateY(0);
 }
 
 .ak-model-menu__plus {
-  font-size: 34px;
+  font-size: 25px;
+  font-weight: 300;
   line-height: 1;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .ak-model-menu__panel,

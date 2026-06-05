@@ -75,12 +75,12 @@ function resolveConfiguredProvider(): ConfiguredProvider | null {
   loadEnvSmokeOnce();
   const apiKey = process.env.CLOUDAIKEY_API_KEY;
   if (!apiKey) return null;
-  // Two curated choices only: the best Claude + the best OpenAI-family model currently
-  // exposed by this endpoint. The first one is the default if the UI does not select.
+  // Two curated choices only. The first one is the backend default if the UI does not
+  // select, and the frontend also defaults to gpt-5.5.
   return configureOpenAiCompatibleProvider({
     provider: "cloudaikey",
     apiKey,
-    modelIds: ["claude-opus-4-7", "gpt-5.5"],
+    modelIds: ["gpt-5.5", "claude-opus-4-7"],
     baseUrl: process.env.CLOUDAIKEY_BASE_URL ?? "https://api.cloudaikey.com/v1",
   });
 }

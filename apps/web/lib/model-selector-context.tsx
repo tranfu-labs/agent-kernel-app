@@ -9,7 +9,7 @@ export interface ModelSelectorContextValue {
   setModel: (model: SupportedModelId) => void;
 }
 
-export const DEFAULT_MODEL: SupportedModelId = "claude-opus-4-7";
+export const DEFAULT_MODEL: SupportedModelId = "gpt-5.5";
 
 const ModelSelectorContext = createContext<ModelSelectorContextValue | null>(null);
 
