@@ -50,6 +50,26 @@ npm run smoke:pi     # verify a Pi Agent session can be created and respond
 For live smokes that hit public endpoints, create a gitignored `.env.smoke` (see the
 placeholders inside it) — never commit real keys.
 
+## Deployment
+
+Company handoff and deployment preparation live in:
+
+- [`docs/deployment/agent-kernel-app-company-handoff.md`](docs/deployment/agent-kernel-app-company-handoff.md)
+
+The deployable product name is:
+
+```text
+agent-kernel-app
+```
+
+For local secret setup, copy the tracked template and fill only local or CI-managed values:
+
+```bash
+cp .env.example .env.smoke
+```
+
+Never commit real API keys. `.env.smoke` is gitignored.
+
 ## Adding a vertical
 
 A vertical plugs into the kernel by contributing:
