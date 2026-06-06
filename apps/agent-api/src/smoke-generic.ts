@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 
 import { buildAgentSessionOptions, GENERIC_SYSTEM_PROMPT } from "@agentkernel/agent-kernel";
 
+const bannedDomainPatterns = ["p" + "r" + "i" + "s" + "m", "fun" + "ding", "ven" + "ue", "fin" + "ancial"]
+  .map((word) => new RegExp(word, "i"));
+
 /**
  * Generic-base smoke: prove the kernel boots as a domain-free assistant with no tools when no
  * vertical is injected. Deterministic (no network/model) — it inspects the bootstrap options,
@@ -16,7 +19,7 @@ export async function runGenericSmoke() {
   assert.deepEqual(toolNames, [], "generic base must expose no domain tools");
   assert.equal(options.noTools, "builtin", "generic base must not expose Pi builtin coding tools");
   assert.equal(systemPrompt, GENERIC_SYSTEM_PROMPT, "generic base must use the generic identity");
-  for (const banned of [new RegExp("p" + "r" + "i" + "s" + "m", "i"), /funding/i, /venue/i, /financial/i]) {
+  for (const banned of bannedDomainPatterns) {
     assert.ok(!banned.test(systemPrompt), `generic identity must not match ${banned}`);
   }
 

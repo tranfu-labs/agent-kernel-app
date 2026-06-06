@@ -1,17 +1,28 @@
-# Prism Web
+# AgentKernel Web
 
-Prism Web is the first-phase ChatGPT-like product shell for Prism.
+AgentKernel Web is the default Next.js + CopilotKit workspace for the generic AgentKernel
+runtime.
 
-## Phase 1 shape
+## Current Shape
 
-The app currently prioritizes:
+The app currently provides:
 
-- a light AI-product sidebar;
-- a branded welcome state;
+- a workspace sidebar for projects and sessions;
 - a CopilotKit-powered conversation surface;
-- a product-grade composer;
-- extension points for later Prism-specific modules.
+- a compact composer with model selection;
+- SQLite-backed session, message, and run persistence;
+- a server-side AgentKernel runtime bridge.
 
-## Deferred to later phases
+## Local Development
 
-Phase 1 does not yet make opportunity cards, prep artifacts, or discover-health panels first-class homepage modules. Those will be layered into the conversation product after the shell itself is correct.
+```bash
+npm run dev -w @agentkernel/web
+```
+
+Default URL:
+
+```text
+http://localhost:3000
+```
+
+Use the repository-root `.env.smoke` file for local provider keys. Do not commit real secrets.

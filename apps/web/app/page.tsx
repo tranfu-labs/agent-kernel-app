@@ -1,23 +1,24 @@
-"use client";
+import { ChatPanel } from "../components/chat-panel";
+import { WorkspaceSidebar } from "../components/workspace-sidebar";
+import { getWorkspaceData, LOCAL_USER_ID } from "../lib/db/workspace-sessions";
 
-import { CopilotChat } from "@copilotkit/react-core/v2";
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<{ session?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const requestedSession = Array.isArray(params?.session) ? params.session[0] : params?.session;
+  const data = await getWorkspaceData(LOCAL_USER_ID, requestedSession);
 
-import { ModelMenu } from "../components/model-menu";
-
-// Full-page ChatGPT/DeepSeek-style chat. The selected model is forwarded through
-// <CopilotKit properties={{ model }}> and applied by KernelAgent.run via session.setModel().
-export default function Page() {
   return (
     <main className="ak-page">
-      <ModelMenu />
-      <CopilotChat
-        className="ak-chat"
-        labels={{
-          welcomeMessageText: "Hi, I'm your AgentKernel assistant. Ask me anything.",
-          chatInputPlaceholder: "Message the agent…",
-          chatDisclaimerText: "The agent can make mistakes. Verify important information.",
-        }}
+      <WorkspaceSidebar
+        projectTitle={data.project.title}
+        sessions={data.sessions}
+        activeSessionId={data.activeSession.id}
       />
+      <ChatPanel sessionId={data.activeSession.id} threadId={data.activeSession.copilotThreadId} />
     </main>
   );
 }

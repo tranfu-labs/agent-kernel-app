@@ -1,54 +1,76 @@
 # AgentKernel
 
-A reusable foundation for building **agent-native products**: a Pi Agent runtime kernel, an
-AG-UI / CopilotKit web workspace, and a vertical-plugin model so one kernel can power many
-domains.
+A reusable foundation for building **agent-native applications**. AgentKernel combines a
+Pi Agent runtime adapter, an AG-UI bridge, a CopilotKit web workspace, and local SQL-backed
+conversation persistence so teams can build new agent products without starting from scratch.
 
-> Status: early. This repository was extracted from an internal financial-research product
-> (Prism) and is being generalized into a domain-agnostic kernel. The **funding-basis** vertical
-> currently ships as the working **reference vertical** — proof that the kernel runs a real
-> domain end-to-end while the core types are progressively genericized.
-
-## What's in here
+## What's In Here
 
 | Layer | Packages | Role |
 |---|---|---|
-| **Agent runtime** | `agent-kernel`, `pi-agent` | Pi Agent session wrapper, control-plane (intent → capability → path → tool-access → policy), provider config |
-| **Agent ↔ UI seam** | `agui-bridge` | Pi event stream → AG-UI protocol translator (sink-agnostic, zero domain coupling) |
-| **Web workspace** | `apps/web` | Next.js + CopilotKit chat/workspace shell over the kernel |
-| **API bridge** | `apps/agent-api` | Streaming/API entrypoint + smoke tests |
-| **Domain primitives** | `domain`, `storage` | Artifact, evidence, fact-envelope contracts + artifact persistence |
-| **Policy** | `policies` | Read-only / permission / confirmation policy framework |
-| **Reference vertical** | `operations`, `tools`, `skills` | Funding-basis research over public exchange data (Binance/Bitget). Replaceable. |
+| Agent runtime | `packages/agent-kernel` | Pi Agent session wrapper, provider setup, model selection, and vertical injection contract |
+| Agent to UI bridge | `packages/agui-bridge` | Pi event stream to AG-UI protocol translation with a persistence port |
+| Web workspace | `apps/web` | Next.js + CopilotKit app with project/session sidebar and chat surface |
+| Local persistence | `apps/web/prisma`, `apps/web/lib/db` | SQLite + Prisma schema, migrations, session/message/run storage |
+| API and smoke checks | `apps/agent-api` | Runtime smoke entrypoints used during development and deployment checks |
+| Generic primitives | `packages/domain`, `packages/storage` | Artifact and plugin primitives shared by optional verticals |
 
 ## Architecture
 
 ```text
-Pi Agent runtime  ──>  agent-kernel control plane  ──>  vertical plugins (tools + skills + contracts)
-                                  │
-                          agui-bridge (Pi ↔ AG-UI)
-                                  │
-                          apps/web (CopilotKit workspace)
+Pi Agent runtime
+      |
+packages/agent-kernel
+      |
+packages/agui-bridge  ---- persistence port ---- apps/web/lib/db
+      |
+apps/web CopilotKit workspace
+      |
+SQLite through Prisma
 ```
 
-- The **kernel is meant to be vertical-agnostic**: a vertical contributes its tools, skills, and
-  contracts; the kernel owns session, routing, and the UI seam.
-- **No execution**: this is a read-only research foundation. There is no order placement,
-  wallet, or trade-execution capability, and adding one must go through an explicit governance design.
-- Real-time facts come from tools, never from model prose.
+The default web runtime starts a generic AgentKernel assistant with no domain-specific plugin.
+Optional verticals can be injected by host applications, but they must not define the default
+identity of this repository.
 
 ## Quickstart
 
 ```bash
 npm ci
-npm run build        # tsc -b across the workspace
-npm run typecheck
-npm run web:build    # Next.js workspace UI
-npm run smoke:pi     # verify a Pi Agent session can be created and respond
+cp .env.example .env.smoke
+npm run db:generate
+npm run db:migrate
+npm run dev -w @agentkernel/web
 ```
 
-For live smokes that hit public endpoints, create a gitignored `.env.smoke` (see the
-placeholders inside it) — never commit real keys.
+Open:
+
+```text
+http://localhost:3000
+```
+
+Fill `.env.smoke` with local AI provider values before testing real model responses. The file
+is gitignored and must never be committed.
+
+## Verification
+
+Useful local checks:
+
+```bash
+npm run typecheck
+npm run test --workspaces --if-present
+npm run web:build
+npm run smoke:generic
+```
+
+SQLite and Prisma commands:
+
+```bash
+npm run db:generate
+npm run db:migrate
+npm run db:deploy
+npm run db:studio
+```
 
 ## Deployment
 
@@ -62,33 +84,51 @@ The deployable product name is:
 agent-kernel-app
 ```
 
-For local secret setup, copy the tracked template and fill only local or CI-managed values:
+For local secret setup:
 
 ```bash
 cp .env.example .env.smoke
 ```
 
-Never commit real API keys. `.env.smoke` is gitignored.
+For production, configure the same variables in CI and the server secret manager. Do not commit
+real API keys.
 
-## Adding a vertical
+## Environment Template
 
-A vertical plugs into the kernel by contributing:
+Tracked template:
 
-1. **Tools** — deterministic, provider-backed read functions (`packages/tools` is the reference).
-2. **Skills** — playbooks the agent loads (`packages/skills`).
-3. **Contracts** — domain objects that extend the generic `Artifact` primitive (`packages/domain`).
-4. **Registration** — wire the vertical's tools/skills into a kernel session.
+```text
+.env.example
+```
 
-The funding-basis vertical is the worked example. Full injection-based vertical registration
-(so the kernel core carries zero domain vocabulary) is in progress — see the roadmap below.
+Local ignored file:
 
-## Roadmap
+```text
+.env.smoke
+```
 
-- [ ] Genericize core types so the kernel ships no domain-specific vocabulary
-      (open vertical/source identifiers, domain enums moved into verticals).
-- [ ] Injection-based vertical registration (kernel no longer imports vertical packages).
-- [ ] A second, non-financial example vertical to prove generality.
+Required for model-backed local runs:
+
+```bash
+CLOUDAIKEY_API_KEY=
+CLOUDAIKEY_BASE_URL=https://api.cloudaikey.com/v1
+DATABASE_URL=file:../data/agent-kernel-dev.db
+```
+
+## Notes For New Products
+
+Use this repository as a starting point for agent applications that need:
+
+- persistent conversation sessions;
+- model/provider configuration;
+- CopilotKit chat UI;
+- AG-UI streaming events;
+- local SQLite data storage;
+- a deployable Next.js app structure.
+
+Keep product-specific prompts, tools, and documents in explicit vertical or app-specific
+folders. The AgentKernel default path should remain general.
 
 ## License
 
-MIT © 2026 tranfu-labs — see [LICENSE](./LICENSE).
+MIT (c) 2026 tranfu-labs. See [LICENSE](./LICENSE).

@@ -1,13 +1,13 @@
-Review the Prism Pi Agent Kernel foundation.
+Review the AgentKernel foundation.
 
 Check:
 
-1. Pi-as-engine / Prism-as-product boundary
-2. domain contracts are independent from runtime
-3. product runtime does not expose coding tools
-4. tools are structured and deterministic
-5. skills are playbooks, not product core
-6. execution is gated by policy and confirmation
-7. docs remain aligned with code
+1. Pi runtime concerns stay inside `packages/agent-kernel`.
+2. AG-UI translation stays inside `packages/agui-bridge` without app/database imports.
+3. SQLite and Prisma persistence stay inside `apps/web`.
+4. The default assistant prompt and web runtime remain domain-agnostic.
+5. Product-specific tools or skills are injected explicitly and are not loaded by default.
+6. Secrets are represented by templates only and are not printed or committed.
+7. Docs remain aligned with code and deployment commands.
 
 Return concrete issues and recommended next small commits.

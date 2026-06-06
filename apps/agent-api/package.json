@@ -6,23 +6,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "smoke:generic": "node dist/smoke-generic.js",
-    "smoke:binance-market-data": "node dist/smoke-binance-market-data.js",
-    "smoke:funding-basis-provider": "node dist/smoke-funding-basis-provider.js",
-    "smoke:funding-basis-tool": "node dist/smoke-funding-basis-tool.js",
-    "smoke:funding-basis-copilot": "node dist/smoke-funding-basis-copilot.js",
-    "smoke:monitor-signal": "node dist/smoke-monitor-signal.js",
-    "smoke:opportunity-explanation": "node dist/smoke-opportunity-explanation.js",
-    "smoke:platform-control-plane": "node dist/smoke-platform-control-plane.js",
-    "smoke:opportunity-research-report": "node dist/smoke-opportunity-research-report.js",
-    "smoke:funding-execution-prep": "node dist/smoke-funding-execution-prep.js",
-    "smoke:mvp1-user-path": "node dist/smoke-mvp1-user-path.js"
+    "smoke:generic": "node dist/smoke-generic.js"
   },
   "dependencies": {
-    "@agentkernel/agent-kernel": "0.1.0",
-    "@agentkernel/funding-basis": "0.1.0",
-    "@agentkernel/operations": "0.1.0",
-    "@agentkernel/tools": "0.1.0"
+    "@agentkernel/agent-kernel": "0.1.0"
   },
   "devDependencies": {
     "tsx": "^4.20.0"

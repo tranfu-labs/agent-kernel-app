@@ -5,17 +5,17 @@ import {
   configureOpenAiCompatibleProvider,
   createKernelAgentSession,
   type ConfiguredProvider,
-  type CreateKernelAgentSessionOptions,
 } from "@agentkernel/agent-kernel";
-import { FUNDING_BASIS_VERTICAL_PLUGIN } from "@agentkernel/funding-basis";
 import { KernelAgent, WarmSessionStore, type PiSessionLike } from "@agentkernel/agui-bridge";
+
+import { createPrismaAgentPersistence } from "./db/agent-persistence";
 
 /**
  * Server-side AgentKernel runtime for the CopilotKit route.
  *
- * By default this runs the generic assistant vertical (no domain tools). Set
- * `AGENTKERNEL_VERTICAL=funding-basis` to load the funding-basis reference vertical — the
- * kernel core stays domain-agnostic; the vertical is injected here at the edge.
+ * This app runs the generic assistant path by default. Product-specific tools or skills
+ * should be injected by a host app or an explicit vertical package, not by the shared web
+ * workspace.
  *
  * The WarmSessionStore MUST be a process-level singleton so Pi sessions survive between
  * requests (plan §2.3). This requires a PERSISTENT Node process (`next start` on a
@@ -27,14 +27,6 @@ import { KernelAgent, WarmSessionStore, type PiSessionLike } from "@agentkernel/
 declare global {
   // eslint-disable-next-line no-var
   var __agent: KernelAgent | undefined;
-}
-
-/** Optionally resolve a vertical from env. Default (unset) = generic assistant. */
-function resolveVertical(): CreateKernelAgentSessionOptions["vertical"] | undefined {
-  if (process.env.AGENTKERNEL_VERTICAL === "funding-basis") {
-    return FUNDING_BASIS_VERTICAL_PLUGIN;
-  }
-  return undefined;
 }
 
 /**
@@ -88,11 +80,9 @@ function resolveConfiguredProvider(): ConfiguredProvider | null {
 function buildAgent(): KernelAgent {
   // Configure the provider ONCE at startup and reuse it across warm sessions.
   const configured = resolveConfiguredProvider();
-  const vertical = resolveVertical();
 
   const store = new WarmSessionStore(async () => {
     const { session } = await createKernelAgentSession({
-      ...(vertical ? { vertical } : {}),
       ...(configured
         ? {
             authStorage: configured.authStorage,
@@ -110,6 +100,7 @@ function buildAgent(): KernelAgent {
     // (plan decision #2). A client must never be able to read another user's warm session.
     resolveUserId: () => "local",
     resolveModel: configured?.resolveModel,
+    persistence: createPrismaAgentPersistence(),
   });
 }
 

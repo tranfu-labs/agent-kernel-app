@@ -1,7 +1,7 @@
 /**
  * Warm session store: the single "load-or-create" choke point for Pi sessions.
  *
- * Rationale (see docs/archived-funding-basis/COPILOTKIT_INTEGRATION_PLAN.md §2.3, resolved by SDK facts):
+ * Rationale:
  * Pi `AgentSession` has no `setMessages`/`initialMessages` and its history is a
  * JSONL-on-disk model, so per-request stateless replay is not feasible. The correct
  * model — and the grain of the Pi SDK — is a long-lived "warm" session kept in memory,

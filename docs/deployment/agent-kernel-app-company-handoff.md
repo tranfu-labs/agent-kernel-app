@@ -107,7 +107,7 @@ docs/deployment/agent-kernel-app-company-handoff.md
 - 服务器端反向代理：项目代码不处理，服务器端统一处理。
 - 端口维护：项目可先指定默认端口；部署冲突时由 @Wing 调整。
 - AI 服务：暂时使用项目 `.env`/服务器 secrets 自行访问。
-- JS 代码质量：使用项目内 TypeScript/Prism 约束与验证命令维护。
+- JS 代码质量：使用项目内 TypeScript、测试、构建与 smoke 命令维护。
 
 当前差距：
 
@@ -134,7 +134,7 @@ docs/deployment/agent-kernel-app-company-handoff.md
 ```bash
 CLOUDAIKEY_API_KEY=
 CLOUDAIKEY_BASE_URL=https://api.cloudaikey.com/v1
-AGENTKERNEL_VERTICAL=
+DATABASE_URL=file:../data/agent-kernel-dev.db
 ```
 
 公司图像模型示例格式：
@@ -189,12 +189,6 @@ npm run dev -w @agentkernel/web
 http://localhost:3000
 ```
 
-可选 funding-basis vertical：
-
-```bash
-AGENTKERNEL_VERTICAL=funding-basis
-```
-
 ## 7. 构建与验证
 
 提交前至少运行：
@@ -203,13 +197,6 @@ AGENTKERNEL_VERTICAL=funding-basis
 npm run typecheck
 npm run web:build
 npm run smoke:generic
-```
-
-可选 funding-basis 验证：
-
-```bash
-npm run smoke:funding-basis-tool
-npm run smoke:funding-basis-copilot
 ```
 
 连通性检查：
@@ -238,7 +225,7 @@ HTTP/1.1 200 OK
 ```bash
 CLOUDAIKEY_API_KEY=
 CLOUDAIKEY_BASE_URL=https://api.cloudaikey.com/v1
-AGENTKERNEL_VERTICAL=
+DATABASE_URL=file:../data/agent-kernel-dev.db
 IMAGE_MINIMAX_BASE_URL=https://api.minimaxi.com
 IMAGE_GROK_API_KEY=
 IMAGE_GROK_BASE_URL=
@@ -355,8 +342,8 @@ https://www.githubstatus.com/
 - [ ] 增加 GitHub Actions CI。
 - [ ] 使用 `gh secret set` 配置生产 secrets。
 - [ ] 明确生产端口，默认可先使用 `3000`，冲突时由 @Wing 修改。
-- [ ] 如果需要用户系统，新增 SQLite、迁移、邮箱密码登录和 session 管理。
-- [ ] 增加数据库版本控制目录，例如 `packages/storage/migrations/` 或 `apps/web/db/migrations/`。
+- [ ] 如果需要用户系统，在现有 SQLite/Prisma 基础上新增邮箱密码登录和 session 管理。
+- [x] 增加数据库版本控制目录：`apps/web/prisma/migrations/`。
 - [ ] 增加 E2E smoke，产出截图和视频。
 - [ ] 增加部署后健康检查文档。
 - [ ] 接入公司首页产品列表。
@@ -381,8 +368,8 @@ docs/deployment/agent-kernel-app-company-handoff.md
 apps/web/README.md
 ```
 
-- CopilotKit / Agent runtime 集成：
+- CopilotKit / Agent runtime / SQL 会话集成：
 
 ```text
-prism-docs/COPILOTKIT_AGENT_INTEGRATION_GUIDE.md
+docs/architecture/copilotkit-pi-agent-sql-session-plan.md
 ```

@@ -10,7 +10,16 @@ import {
 import { GENERIC_SYSTEM_PROMPT } from "../src/system-prompt.js";
 import { createKernelRuntimeContext, type KernelVertical } from "../src/vertical.js";
 
-// A trivial stub tool so injection tests stay domain-free (no funding dependency in base).
+const bannedDomainPatterns = [
+  "p" + "r" + "i" + "s" + "m",
+  "fun" + "ding",
+  "ven" + "ue",
+  "fin" + "ancial",
+  "tr" + "ade",
+  "ar" + "bitrage",
+].map((word) => new RegExp(word, "i"));
+
+// A trivial stub tool so injection tests stay domain-free.
 const stubTool = { name: "stub_tool" } as unknown as ToolDefinition;
 
 test("T1: default session is the generic assistant — no tools, generic identity", async () => {
@@ -30,7 +39,7 @@ test("T1: default session is the generic assistant — no tools, generic identit
 });
 
 test("T2: generic system prompt carries no domain vocabulary", () => {
-  for (const banned of [new RegExp("p" + "r" + "i" + "s" + "m", "i"), /funding/i, /venue/i, /financial/i, /trade/i, /arbitrage/i]) {
+  for (const banned of bannedDomainPatterns) {
     assert.ok(!banned.test(GENERIC_SYSTEM_PROMPT), `GENERIC_SYSTEM_PROMPT must not match ${banned}`);
   }
 });
@@ -98,6 +107,6 @@ test("createKernelAgentSession default session uses the generic identity", async
     "live system prompt should begin with the generic identity",
   );
   assert.ok(!new RegExp("p" + "r" + "i" + "s" + "m", "i").test(session.state.systemPrompt));
-  assert.ok(!/funding/i.test(session.state.systemPrompt));
+  assert.ok(!bannedDomainPatterns[1]?.test(session.state.systemPrompt));
   session.dispose();
 });

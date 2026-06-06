@@ -23,6 +23,21 @@ export interface KernelAgentOptions {
   emitReasoning?: boolean;
   /** Resolve a requested model id from `RunAgentInput.forwardedProps.model`. */
   resolveModel?: (modelId: string) => unknown | undefined;
+  /** Optional durable persistence adapter owned by the host app. */
+  persistence?: AgentPersistence;
+}
+
+export interface AgentPersistence {
+  onRunStart(input: {
+    userId: string;
+    threadId: string;
+    runId: string;
+    model?: string;
+    latestUserText: string;
+  }): Promise<{ sessionId: string; userMessageId: string }>;
+  onRunFinish(input: { runId: string; assistantText: string }): Promise<void>;
+  onRunError(input: { runId: string; code: string; message: string }): Promise<void>;
+  onRunCancel?(input: { runId: string; code: string; message: string }): Promise<void>;
 }
 
 /**
@@ -41,6 +56,7 @@ export class KernelAgent extends AbstractAgent {
   private readonly resolveUserId: UserResolver;
   private readonly emitReasoning: boolean;
   private readonly resolveModel?: (modelId: string) => unknown | undefined;
+  private readonly persistence?: AgentPersistence;
 
   constructor(opts: KernelAgentOptions) {
     super({
@@ -51,6 +67,7 @@ export class KernelAgent extends AbstractAgent {
     this.resolveUserId = opts.resolveUserId ?? (() => "local");
     this.emitReasoning = opts.emitReasoning ?? false;
     this.resolveModel = opts.resolveModel;
+    this.persistence = opts.persistence;
   }
 
   /**
@@ -65,6 +82,7 @@ export class KernelAgent extends AbstractAgent {
       resolveUserId: this.resolveUserId,
       emitReasoning: this.emitReasoning,
       resolveModel: this.resolveModel,
+      persistence: this.persistence,
       agentId: this.agentId,
       description: this.description,
     });
@@ -75,6 +93,9 @@ export class KernelAgent extends AbstractAgent {
       let unsubscribe: (() => void) | null = null;
       let managedSession: { session: { abort(): Promise<void>; isStreaming: boolean } } | null = null;
       let settled = false;
+      let assistantText = "";
+      let persistedRunStarted = false;
+      let terminalPersistenceWritten = false;
 
       const emit: (e: AguiEvent) => void = (e) => {
         // Wire shapes are verified to match @ag-ui/core; the only gap is the nominal
@@ -85,6 +106,7 @@ export class KernelAgent extends AbstractAgent {
         threadId: input.threadId,
         runId: input.runId,
         emitReasoning: this.emitReasoning,
+        autoFinishOnAgentEnd: !this.persistence,
       });
 
       const finish = (): void => {
@@ -95,13 +117,49 @@ export class KernelAgent extends AbstractAgent {
       };
 
       void (async () => {
-        const key: SessionKey = { userId: this.resolveUserId(input), threadId: input.threadId };
+        const userId = this.resolveUserId(input);
+        const key: SessionKey = { userId, threadId: input.threadId };
+        const text = latestUserText(input.messages);
+        const requestedModelId = (input.forwardedProps as { model?: unknown } | undefined)?.model;
+        const modelId = typeof requestedModelId === "string" && requestedModelId.length > 0 ? requestedModelId : undefined;
+
+        if (text == null) {
+          translator.fail("No user message found in RunAgentInput.", "NO_INPUT");
+          finish();
+          return;
+        }
+
+        try {
+          await this.persistence?.onRunStart({
+            userId,
+            threadId: input.threadId,
+            runId: input.runId,
+            ...(modelId ? { model: modelId } : {}),
+            latestUserText: text,
+          });
+          persistedRunStarted = true;
+        } catch (err) {
+          translator.fail(errMsg(err), "PERSISTENCE_RUN_START_ERROR");
+          finish();
+          return;
+        }
+
+        const failRun = async (message: string, code: string): Promise<void> => {
+          translator.fail(message, code);
+          try {
+            await this.persistence?.onRunError({ runId: input.runId, code, message });
+            terminalPersistenceWritten = true;
+          } catch {
+            /* persistence errors after an emitted run failure are non-fatal to the stream */
+          }
+          finish();
+        };
+
         let managed;
         try {
           managed = await this.store.loadOrCreate(key);
         } catch (err) {
-          translator.fail(errMsg(err), "SESSION_CREATE_ERROR");
-          finish();
+          await failRun(errMsg(err), "SESSION_CREATE_ERROR");
           return;
         }
         managedSession = managed;
@@ -109,12 +167,10 @@ export class KernelAgent extends AbstractAgent {
         // Optional per-run model switch: the frontend can pass `properties={{ model }}` to
         // <CopilotKit>, which arrives here as RunAgentInput.forwardedProps.model. Reuse Pi's
         // built-in session.setModel() instead of splitting warm sessions per model.
-        const requestedModelId = (input.forwardedProps as { model?: unknown } | undefined)?.model;
         if (typeof requestedModelId === "string" && requestedModelId.length > 0 && this.resolveModel) {
           const nextModel = this.resolveModel(requestedModelId);
           if (!nextModel) {
-            translator.fail(`Requested model is not configured: ${requestedModelId}`, "MODEL_NOT_AVAILABLE");
-            finish();
+            await failRun(`Requested model is not configured: ${requestedModelId}`, "MODEL_NOT_AVAILABLE");
             return;
           }
           const currentModelId = managed.session.model?.id;
@@ -123,13 +179,11 @@ export class KernelAgent extends AbstractAgent {
               if (typeof managed.session.setModel === "function") {
                 await managed.session.setModel(nextModel);
               } else {
-                translator.fail("This session implementation does not support model switching.", "MODEL_SWITCH_UNSUPPORTED");
-                finish();
+                await failRun("This session implementation does not support model switching.", "MODEL_SWITCH_UNSUPPORTED");
                 return;
               }
             } catch (err) {
-              translator.fail(errMsg(err), "MODEL_SWITCH_ERROR");
-              finish();
+              await failRun(errMsg(err), "MODEL_SWITCH_ERROR");
               return;
             }
           }
@@ -138,37 +192,58 @@ export class KernelAgent extends AbstractAgent {
         // Concurrency guard: one streaming run per warm session. A second overlapping run
         // (double-submit / second tab / SSE reconnect) is rejected rather than interleaved.
         if (managed.session.isStreaming) {
-          translator.fail("A run is already streaming for this thread.", "BUSY");
-          finish();
+          await failRun("A run is already streaming for this thread.", "BUSY");
           return;
         }
 
         unsubscribe = managed.session.subscribe((ev) => {
           translator.onPiEvent(ev as PiSessionEvent);
-          const e = ev as { type?: string; willRetry?: boolean };
-          if (e.type === "agent_end" && e.willRetry !== true) finish();
+          assistantText += assistantTextDelta(ev);
         });
-
-        const text = latestUserText(input.messages);
-        if (text == null) {
-          translator.fail("No user message found in RunAgentInput.", "NO_INPUT");
-          finish();
-          return;
-        }
 
         try {
           await managed.session.prompt(text);
+          try {
+            await this.persistence?.onRunFinish({ runId: input.runId, assistantText });
+            terminalPersistenceWritten = true;
+          } catch (err) {
+            const message = errMsg(err);
+            translator.fail(message, "PERSISTENCE_RUN_FINISH_ERROR");
+            try {
+              await this.persistence?.onRunError({
+                runId: input.runId,
+                code: "PERSISTENCE_RUN_FINISH_ERROR",
+                message,
+              });
+              terminalPersistenceWritten = true;
+            } catch {
+              /* if the persistence layer is unavailable, the emitted RUN_ERROR is the only reliable signal */
+            }
+            finish();
+            return;
+          }
+          translator.finish();
           // Safety net: if agent_end never closed the stream, close it now.
           finish();
         } catch (err) {
-          translator.fail(errMsg(err), "PI_PROMPT_ERROR");
-          finish();
+          await failRun(errMsg(err), "PI_PROMPT_ERROR");
         }
       })();
 
       // Teardown on unsubscribe (client disconnect): stop the run to halt token spend,
       // but DO NOT dispose — the warm session must survive for the next request.
       return () => {
+        const shouldCancelPersistedRun = persistedRunStarted && !terminalPersistenceWritten && !settled;
+        if (shouldCancelPersistedRun) {
+          terminalPersistenceWritten = true;
+          void this.persistence
+            ?.onRunCancel?.({
+              runId: input.runId,
+              code: "CLIENT_DISCONNECTED",
+              message: "Client disconnected before the run completed.",
+            })
+            .catch(() => {});
+        }
         if (unsubscribe) unsubscribe();
         if (managedSession && managedSession.session.isStreaming) {
           void managedSession.session.abort().catch(() => {});
@@ -197,4 +272,21 @@ export function latestUserText(messages: Message[] | undefined): string | null {
 
 function errMsg(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
+}
+
+function assistantTextDelta(ev: unknown): string {
+  const event = ev as {
+    type?: string;
+    assistantMessageEvent?: {
+      type?: string;
+      delta?: unknown;
+      content?: unknown;
+    };
+  };
+  const assistantEvent = event.assistantMessageEvent;
+  if (event.type !== "message_update" || !assistantEvent) return "";
+  if (assistantEvent.type === "text_delta" && typeof assistantEvent.delta === "string") {
+    return assistantEvent.delta;
+  }
+  return "";
 }

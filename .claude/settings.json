@@ -9,8 +9,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cat .claude/prism-workflow-reminder.txt",
-            "statusMessage": "Loading Prism workflow reminder"
+            "command": "cat .claude/agentkernel-workflow-reminder.txt",
+            "statusMessage": "Loading AgentKernel workflow reminder"
           }
         ]
       }

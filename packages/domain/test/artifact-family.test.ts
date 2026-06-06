@@ -5,15 +5,15 @@ import {
   RESEARCH_LAYER_FORBIDDEN_FIELDS,
 } from "../src/index.js";
 
-test("artifact family includes refresh, signal, proposal, and risk artifacts", () => {
-  assert.equal(ARTIFACT_FAMILY_TYPES.includes("refresh_artifact"), true);
-  assert.equal(ARTIFACT_FAMILY_TYPES.includes("signal_artifact"), true);
-  assert.equal(ARTIFACT_FAMILY_TYPES.includes("proposal_artifact"), true);
-  assert.equal(ARTIFACT_FAMILY_TYPES.includes("risk_artifact"), true);
+test("artifact family includes generic agent app artifacts", () => {
+  assert.equal(ARTIFACT_FAMILY_TYPES.includes("research_brief"), true);
+  assert.equal(ARTIFACT_FAMILY_TYPES.includes("source_snapshot"), true);
+  assert.equal(ARTIFACT_FAMILY_TYPES.includes("run_summary"), true);
+  assert.equal(ARTIFACT_FAMILY_TYPES.includes("workflow_artifact"), true);
 });
 
-test("research-layer forbidden fields include action-capable inputs", () => {
-  for (const field of ["apiKey", "secret", "account", "balance", "position", "order", "margin", "withdraw", "transfer", "walletPrivateKey"]) {
+test("research-layer forbidden fields include credential-bearing inputs", () => {
+  for (const field of ["apiKey", "secret", "password", "privateKey", "accessToken", "refreshToken", "sessionCookie"]) {
     assert.equal(RESEARCH_LAYER_FORBIDDEN_FIELDS.includes(field), true);
   }
 });

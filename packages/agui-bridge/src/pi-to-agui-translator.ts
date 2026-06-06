@@ -13,6 +13,12 @@ export interface TranslatorOptions {
   /** Emit REASONING_MESSAGE_CONTENT for thinking deltas. Default false. */
   emitReasoning?: boolean;
   /**
+   * Emit RUN_FINISHED immediately when Pi sends `agent_end`. Default true.
+   * Hosts with mandatory durable persistence can disable this and call `finish()`
+   * after their final write has succeeded.
+   */
+  autoFinishOnAgentEnd?: boolean;
+  /**
    * ID generator for AG-UI message ids (Pi assistant messages have no stable id).
    * Injectable for deterministic tests. Default: monotonic `${runId}-m{n}`.
    */
@@ -36,7 +42,7 @@ interface ToolCallStream {
 /**
  * Stateful, per-run translator from Pi `AgentSessionEvent`s to AG-UI events.
  *
- * Design rules (see docs/archived-funding-basis/COPILOTKIT_INTEGRATION_PLAN.md §2.2):
+ * Design rules:
  *  - Drive text/tool-call streaming from the nested `assistantMessageEvent` ONLY;
  *    `message_start`/`message_end` are lifecycle anchors (driving from both double-emits).
  *  - Every START gets a matching END before RUN_FINISHED / RUN_ERROR.
@@ -52,6 +58,7 @@ export class PiToAguiTranslator {
   private readonly threadId: string;
   private readonly runId: string;
   private readonly emitReasoning: boolean;
+  private readonly autoFinishOnAgentEnd: boolean;
   private readonly genId: (seq: number) => string;
 
   private runStarted = false;
@@ -77,6 +84,7 @@ export class PiToAguiTranslator {
     this.threadId = opts.threadId;
     this.runId = opts.runId;
     this.emitReasoning = opts.emitReasoning ?? false;
+    this.autoFinishOnAgentEnd = opts.autoFinishOnAgentEnd ?? true;
     this.genId = opts.generateMessageId ?? ((n) => `${this.runId}-m${n}`);
   }
 
@@ -136,6 +144,11 @@ export class PiToAguiTranslator {
     this.write({ type: "RUN_ERROR", message, code });
   }
 
+  /** Emit terminal RUN_FINISHED, balancing any open streams first. */
+  finish(): void {
+    this.finishRun();
+  }
+
   // ---------------------------------------------------------------- run lifecycle
 
   private startRun(): void {
@@ -147,6 +160,10 @@ export class PiToAguiTranslator {
   private handleAgentEnd(willRetry: boolean): void {
     if (willRetry) {
       // Not the end of the run — close dangling streams so the next attempt is balanced.
+      this.closeAllOpenStreams();
+      return;
+    }
+    if (!this.autoFinishOnAgentEnd) {
       this.closeAllOpenStreams();
       return;
     }

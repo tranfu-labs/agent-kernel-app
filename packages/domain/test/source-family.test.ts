@@ -3,52 +3,68 @@ import { describe, it } from "node:test";
 
 import {
   createCoverage,
-  createVenueMarketCapabilityDescriptor,
-  createVenueMarketSourceDescriptor,
+  createSourceCapabilityDescriptor,
+  createSourceDescriptor,
   type FactEnvelope,
 } from "../src/source-family.ts";
 
-describe("source-family contracts (venue_market_data)", () => {
-  it("creates a venue source descriptor scoped to public read capabilities", () => {
-    const descriptor = createVenueMarketSourceDescriptor("binance", ["market.snapshot", "market.funding"]);
-    assert.equal(descriptor.sourceId, "exchange:binance");
-    assert.equal(descriptor.sourceFamily, "venue_market_data");
+describe("source-family contracts", () => {
+  it("creates a source descriptor scoped to public read capabilities", () => {
+    const descriptor = createSourceDescriptor({
+      sourceId: "docs:product",
+      sourceFamily: "document",
+      providerName: "product-docs",
+      transport: "rest",
+      authRequirement: "public",
+      trustLevel: "official",
+      freshnessClass: "static",
+      supportedCapabilities: ["document.read", "document.search"],
+    });
+    assert.equal(descriptor.sourceId, "docs:product");
+    assert.equal(descriptor.sourceFamily, "document");
     assert.equal(descriptor.transport, "rest");
     assert.equal(descriptor.authRequirement, "public");
     assert.equal(descriptor.trustLevel, "official");
-    assert.deepEqual(descriptor.supportedCapabilities, ["market.snapshot", "market.funding"]);
+    assert.deepEqual(descriptor.supportedCapabilities, ["document.read", "document.search"]);
     assert.ok(descriptor.degradationModes.includes("timeout"));
   });
 
   it("creates a semantic capability descriptor, not an endpoint shape", () => {
-    const capability = createVenueMarketCapabilityDescriptor("market.funding", ["binance", "bitget"]);
-    assert.equal(capability.capabilityKey, "market.funding");
-    assert.equal(capability.sourceFamily, "venue_market_data");
+    const capability = createSourceCapabilityDescriptor({
+      capabilityKey: "document.search",
+      sourceFamily: "document",
+      authRequirement: "public",
+      freshnessClass: "static",
+      mode: "batch",
+      supportedSources: ["docs:product", "docs:faq"],
+    });
+    assert.equal(capability.capabilityKey, "document.search");
+    assert.equal(capability.sourceFamily, "document");
     assert.equal(capability.mode, "batch");
-    assert.deepEqual(capability.supportedSources, ["exchange:binance", "exchange:bitget"]);
+    assert.deepEqual(capability.supportedSources, ["docs:product", "docs:faq"]);
   });
 
   it("computes coverage gaps from requested vs returned", () => {
-    const coverage = createCoverage(["BTCUSDT", "ETHUSDT", "SOLUSDT"], ["BTCUSDT", "SOLUSDT"]);
-    assert.deepEqual(coverage.missing, ["ETHUSDT"]);
+    const coverage = createCoverage(["intro", "billing", "security"], ["intro", "security"]);
+    assert.deepEqual(coverage.missing, ["billing"]);
   });
 
   it("fact envelope keeps a shared shape while payload stays family-specific", () => {
     const envelope: FactEnvelope<number[]> = {
-      sourceId: "exchange:binance",
-      provider: "binance",
-      sourceFamily: "venue_market_data",
-      capabilityKey: "market.snapshot",
+      sourceId: "docs:product",
+      provider: "product-docs",
+      sourceFamily: "document",
+      capabilityKey: "document.search",
       status: "ok",
       warnings: [],
       observedAt: "2026-01-01T00:00:00.000Z",
       fetchedAt: "2026-01-01T00:00:00.000Z",
-      freshnessClass: "realtime",
+      freshnessClass: "static",
       authRequirement: "public",
-      coverage: createCoverage(["BTCUSDT"], ["BTCUSDT"]),
+      coverage: createCoverage(["intro"], ["intro"]),
       payload: [1, 2, 3],
     };
-    assert.equal(envelope.sourceFamily, "venue_market_data");
+    assert.equal(envelope.sourceFamily, "document");
     assert.deepEqual(envelope.payload, [1, 2, 3]);
   });
 });

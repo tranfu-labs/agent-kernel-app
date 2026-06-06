@@ -5,32 +5,18 @@
   "type": "module",
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "verticals/*",
-    "legacy-adapters/*"
+    "packages/*"
   ],
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "typecheck": "tsc -b tsconfig.json --pretty false",
     "test": "npm run test --workspaces --if-present",
-    "smoke:pi": "npm run build && npm run smoke:pi -w @agentkernel/agent-api",
     "smoke:generic": "npm run build && npm run smoke:generic -w @agentkernel/agent-api",
-    "smoke:funding": "npm run build && npm run smoke:funding -w @agentkernel/agent-api",
-    "smoke:funding-scan": "npm run build && npm run smoke:funding-scan -w @agentkernel/agent-api",
-    "smoke:binance-market-data": "npm run build && npm run smoke:binance-market-data -w @agentkernel/agent-api",
-    "smoke:funding-basis-provider": "npm run build && npm run smoke:funding-basis-provider -w @agentkernel/agent-api",
-    "smoke:funding-basis-tool": "npm run build && npm run smoke:funding-basis-tool -w @agentkernel/agent-api",
-    "smoke:funding-basis-copilot": "npm run build && npm run smoke:funding-basis-copilot -w @agentkernel/agent-api",
-    "smoke:monitor-signal": "npm run build && npm run smoke:monitor-signal -w @agentkernel/agent-api",
-    "smoke:opportunity-explanation": "npm run build && npm run smoke:opportunity-explanation -w @agentkernel/agent-api",
-    "smoke:platform-research-loop": "npm run build && npm run smoke:platform-research-loop -w @agentkernel/agent-api",
-    "smoke:platform-control-plane": "npm run build && npm run smoke:platform-control-plane -w @agentkernel/agent-api",
-    "smoke:product-api": "npm run build && npm run smoke:product-api -w @agentkernel/agent-api",
-    "web:build": "npm run build -w @agentkernel/web",
-    "smoke:opportunity-research-report": "npm run build && npm run smoke:opportunity-research-report -w @agentkernel/agent-api",
-    "smoke:funding-execution-prep": "npm run build && npm run smoke:funding-execution-prep -w @agentkernel/agent-api",
-    "gate:mvp1-control-plane": "npm run build && npm --workspace @agentkernel/funding-basis test -- platform-intent-resolution.test.ts platform-followup-resolution.test.ts platform-policy-gate.test.ts platform-tool-access.test.ts platform-routing-regression.test.ts platform-routing-acceptance.test.ts platform-baseline-comparison.test.ts && npm run smoke:platform-control-plane",
-    "gate:mvp1-arbitrage-prep": "npm run build && npm run typecheck && npm --workspace @agentkernel/operations test -- funding-basis-arbitrage.test.ts funding-execution-prep.test.ts funding-risk-gate.test.ts && npm --workspace @agentkernel/funding-basis test -- platform-intent-resolution.test.ts platform-followup-resolution.test.ts platform-tool-access.test.ts platform-routing-regression.test.ts platform-routing-acceptance.test.ts platform-baseline-comparison.test.ts platform-execution-prep-routing.test.ts funding-basis-tools.test.ts && npm run smoke:platform-control-plane && npm run smoke:funding-execution-prep"
+    "db:generate": "npm exec -w @agentkernel/web -- prisma generate --schema prisma/schema.prisma",
+    "db:migrate": "npm exec -w @agentkernel/web -- prisma migrate dev --schema prisma/schema.prisma",
+    "db:deploy": "npm exec -w @agentkernel/web -- prisma migrate deploy --schema prisma/schema.prisma",
+    "db:studio": "npm exec -w @agentkernel/web -- prisma studio --schema prisma/schema.prisma",
+    "web:build": "npm run build -w @agentkernel/web"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

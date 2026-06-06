@@ -8,7 +8,6 @@ type AnchorRect = { left: number; top: number; width: number; height: number };
 
 const MODEL_OPTIONS = [
   { id: "gpt-5.5", label: "GPT-5.5" },
-  { id: "claude-opus-4-7", label: "Claude Opus 4.7" },
 ] as const;
 
 export function ModelMenu() {
@@ -68,7 +67,7 @@ export function ModelMenu() {
         type="button"
         className="ak-model-menu__trigger"
         aria-label="Open model menu"
-        title={`Model: ${MODEL_OPTIONS.find((option) => option.id === model)?.label ?? model}`}
+        title="Open model menu"
         onClick={() => {
           setOpen((v) => !v);
           setSubmenuOpen(false);

@@ -6,8 +6,6 @@
   },
   "include": ["src/**/*.ts"],
   "references": [
-    { "path": "../../packages/agent-kernel" },
-    { "path": "../../packages/tools" },
-    { "path": "../../verticals/funding-basis" }
+    { "path": "../../packages/agent-kernel" }
   ]
 }

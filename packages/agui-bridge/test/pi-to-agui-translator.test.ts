@@ -66,16 +66,16 @@ describe("PiToAguiTranslator — plain text turn", () => {
 describe("PiToAguiTranslator — tool call with streamed args", () => {
   it("maps toolcall_start/delta/end + execution result to TOOL_CALL_* + RESULT", () => {
     const { t, events } = makeRecorder();
-    const tc: PiToolCall = { type: "toolCall", id: "tc_1", name: "get_opportunity", arguments: { symbol: "BTC" } };
+    const tc: PiToolCall = { type: "toolCall", id: "tc_1", name: "lookup_document", arguments: { id: "doc_1" } };
     const stream: PiSessionEvent[] = [
       { type: "agent_start" },
       { type: "message_start", message: {} },
       { type: "message_update", message: {}, assistantMessageEvent: { type: "toolcall_start", contentIndex: 0, partial: toolPartial(0, { ...tc, arguments: {} }) } },
-      { type: "message_update", message: {}, assistantMessageEvent: { type: "toolcall_delta", contentIndex: 0, delta: '{"symbol":', partial: toolPartial(0, { ...tc, arguments: {} }) } },
-      { type: "message_update", message: {}, assistantMessageEvent: { type: "toolcall_delta", contentIndex: 0, delta: '"BTC"}', partial: toolPartial(0, tc) } },
+      { type: "message_update", message: {}, assistantMessageEvent: { type: "toolcall_delta", contentIndex: 0, delta: '{"id":', partial: toolPartial(0, { ...tc, arguments: {} }) } },
+      { type: "message_update", message: {}, assistantMessageEvent: { type: "toolcall_delta", contentIndex: 0, delta: '"doc_1"}', partial: toolPartial(0, tc) } },
       { type: "message_update", message: {}, assistantMessageEvent: { type: "toolcall_end", contentIndex: 0, toolCall: tc, partial: toolPartial(0, tc) } },
-      { type: "tool_execution_start", toolCallId: "tc_1", toolName: "get_opportunity", args: { symbol: "BTC" } },
-      { type: "tool_execution_end", toolCallId: "tc_1", toolName: "get_opportunity", result: { content: [{ type: "text", text: "edge=12bps" }] }, isError: false },
+      { type: "tool_execution_start", toolCallId: "tc_1", toolName: "lookup_document", args: { id: "doc_1" } },
+      { type: "tool_execution_end", toolCallId: "tc_1", toolName: "lookup_document", result: { content: [{ type: "text", text: "title=Project notes" }] }, isError: false },
       { type: "agent_end", willRetry: false },
     ];
     for (const e of stream) t.onPiEvent(e);
@@ -91,18 +91,18 @@ describe("PiToAguiTranslator — tool call with streamed args", () => {
     ]);
     const callStart = events[1] as Extract<AguiEvent, { type: "TOOL_CALL_START" }>;
     assert.equal(callStart.toolCallId, "tc_1");
-    assert.equal(callStart.toolCallName, "get_opportunity");
+    assert.equal(callStart.toolCallName, "lookup_document");
     assert.equal(callStart.parentMessageId, "m1");
     const result = events[5] as Extract<AguiEvent, { type: "TOOL_CALL_RESULT" }>;
     assert.equal(result.toolCallId, "tc_1");
-    assert.equal(result.content, "edge=12bps");
+    assert.equal(result.content, "title=Project notes");
   });
 });
 
 describe("PiToAguiTranslator — tool call WITHOUT streamed args", () => {
   it("emits full args once at toolcall_end when no deltas were seen", () => {
     const { t, events } = makeRecorder();
-    const tc: PiToolCall = { type: "toolCall", id: "tc_9", name: "scan", arguments: { venues: ["binance", "bitget"] } };
+    const tc: PiToolCall = { type: "toolCall", id: "tc_9", name: "search_documents", arguments: { folders: ["docs", "notes"] } };
     const stream: PiSessionEvent[] = [
       { type: "agent_start" },
       { type: "message_start", message: {} },

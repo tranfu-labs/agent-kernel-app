@@ -1,24 +1,10 @@
 import type { FetchStatus } from "./fetch-status.js";
-import type {
-  ExchangeMarket,
-  ExchangeTicker,
-  FundingRatePoint,
-  MarketContext,
-  OrderbookDepthEstimate,
-  Venue,
-} from "./market-data.js";
 
-export type SourceFamily = "venue_market_data";
+export type SourceFamily = "web" | "document" | "database" | "api" | "file" | (string & {});
 export type SourceTransport = "sdk" | "rest" | "browser" | "file" | "stream";
 export type SourceAuthRequirement = "public" | "service_token" | "user_secret" | "session_cookie" | "browser_login";
 export type SourceFamilyTrustLevel = "official" | "high" | "medium" | "low";
 export type SourceFreshnessClass = "realtime" | "near_realtime" | "delayed" | "historical" | "static";
-
-export type VenueMarketDataCapabilityKey =
-  | "instrument.catalog"
-  | "market.snapshot"
-  | "market.funding"
-  | "market.depth";
 
 export interface SourceDescriptor {
   sourceId: string;
@@ -62,19 +48,6 @@ export interface FactEnvelope<TPayload> {
   payload: TPayload;
 }
 
-export type VenueMarketDataPayloadMap = {
-  "instrument.catalog": ExchangeMarket[];
-  "market.snapshot": ExchangeTicker[];
-  "market.funding": FundingRatePoint[];
-  "market.depth": OrderbookDepthEstimate;
-  "market.context": MarketContext[];
-};
-
-export type VenueMarketDataFactEnvelope<K extends keyof VenueMarketDataPayloadMap> = FactEnvelope<VenueMarketDataPayloadMap[K]> & {
-  sourceFamily: "venue_market_data";
-  capabilityKey: K;
-};
-
 export function createCoverage(requested: string[], returned: string[]): FactCoverage {
   const returnedSet = new Set(returned);
   return {
@@ -84,30 +57,32 @@ export function createCoverage(requested: string[], returned: string[]): FactCov
   };
 }
 
-export function createVenueMarketSourceDescriptor(venue: Venue, capabilityKeys: VenueMarketDataCapabilityKey[]): SourceDescriptor {
+export function createSourceDescriptor(input: {
+  sourceId: string;
+  sourceFamily: SourceFamily;
+  providerName: string;
+  transport: SourceTransport;
+  authRequirement: SourceAuthRequirement;
+  trustLevel: SourceFamilyTrustLevel;
+  freshnessClass: SourceFreshnessClass;
+  supportedCapabilities: string[];
+  degradationModes?: FetchStatus[];
+}): SourceDescriptor {
   return {
-    sourceId: `exchange:${venue}`,
-    sourceFamily: "venue_market_data",
-    providerName: venue,
-    transport: "rest",
-    authRequirement: "public",
-    trustLevel: "official",
-    freshnessClass: "realtime",
-    supportedCapabilities: capabilityKeys,
-    degradationModes: ["partial", "timeout", "rate_limited", "geo_blocked", "unsupported", "failed"],
+    ...input,
+    degradationModes: input.degradationModes ?? ["partial", "timeout", "rate_limited", "unsupported", "failed"],
   };
 }
 
-export function createVenueMarketCapabilityDescriptor(
-  capabilityKey: VenueMarketDataCapabilityKey,
-  supportedSources: Venue[],
-): SourceCapabilityDescriptor {
+export function createSourceCapabilityDescriptor(input: {
+  capabilityKey: string;
+  sourceFamily: SourceFamily;
+  authRequirement: SourceAuthRequirement;
+  freshnessClass: SourceFreshnessClass;
+  mode: "snapshot" | "batch" | "stream";
+  supportedSources: string[];
+}): SourceCapabilityDescriptor {
   return {
-    capabilityKey,
-    sourceFamily: "venue_market_data",
-    authRequirement: "public",
-    freshnessClass: "realtime",
-    mode: capabilityKey === "instrument.catalog" ? "snapshot" : "batch",
-    supportedSources: supportedSources.map((venue) => `exchange:${venue}`),
+    ...input,
   };
 }

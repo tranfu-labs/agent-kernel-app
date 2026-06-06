@@ -82,9 +82,9 @@ async function main(): Promise<void> {
     baseUrl,
   });
 
-  // Real funding-basis factory (funding-basis tools + system prompt) with the cloudaikey model injected.
-  // SMOKE_MINIMAL=1 uses a bare session (no funding-basis tools) to verify the streaming bridge
-  // in isolation — useful when a domain tool's schema is rejected by the provider.
+  // Real AgentKernel factory with the cloudaikey model injected.
+  // SMOKE_MINIMAL=1 uses a bare Pi session with no tools to verify the streaming bridge
+  // in isolation.
   const minimal = process.env.SMOKE_MINIMAL === "1";
   const store = new WarmSessionStore(
     async () => {
@@ -104,7 +104,7 @@ async function main(): Promise<void> {
     { sweepMs: 0 },
   );
   const agent = new KernelAgent({ store });
-  console.log(`• mode: ${minimal ? "MINIMAL (no tools)" : "FULL (funding-basis tools)"}`);
+  console.log(`• mode: ${minimal ? "MINIMAL (no tools)" : "GENERIC AGENTKERNEL"}`);
 
   console.log(`• prompt: ${JSON.stringify(prompt)}\n• streaming AG-UI events:\n`);
 

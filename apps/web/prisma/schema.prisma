@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model WorkspaceProject {
+  id        String             @id
+  userId    String             @map("user_id")
+  title     String
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  sessions  WorkspaceSession[]
+
+  @@index([userId, updatedAt])
+  @@map("workspace_projects")
+}
+
+model WorkspaceSession {
+  id              String             @id
+  userId          String             @map("user_id")
+  projectId       String             @map("project_id")
+  title           String
+  summary         String?
+  status          String             @default("active")
+  model           String             @default("gpt-5.5")
+  copilotThreadId String             @unique @map("copilot_thread_id")
+  messageCount    Int                @default(0) @map("message_count")
+  lastOpenedAt    DateTime?          @map("last_opened_at")
+  lastMessageAt   DateTime?          @map("last_message_at")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  project         WorkspaceProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messages        WorkspaceMessage[]
+  runs            AgentRun[]
+
+  @@index([userId, projectId, updatedAt])
+  @@index([userId, lastOpenedAt])
+  @@index([userId, lastMessageAt])
+  @@map("workspace_sessions")
+}
+
+model WorkspaceMessage {
+  id              String           @id
+  userId          String           @map("user_id")
+  sessionId       String           @map("session_id")
+  copilotThreadId String           @map("copilot_thread_id")
+  role            String
+  content         String
+  status          String           @default("final")
+  source          String           @default("copilotkit")
+  runId           String?          @map("run_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  session         WorkspaceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionId, createdAt])
+  @@index([copilotThreadId, createdAt])
+  @@index([runId])
+  @@map("workspace_messages")
+}
+
+model AgentRun {
+  id                 String           @id
+  userId             String           @map("user_id")
+  sessionId          String           @map("session_id")
+  copilotThreadId    String           @map("copilot_thread_id")
+  status             String
+  model              String?
+  userMessageId      String?          @map("user_message_id")
+  assistantMessageId String?          @map("assistant_message_id")
+  errorCode          String?          @map("error_code")
+  errorMessage       String?          @map("error_message")
+  startedAt          DateTime         @default(now()) @map("started_at")
+  finishedAt         DateTime?        @map("finished_at")
+  session            WorkspaceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionId, startedAt])
+  @@index([copilotThreadId, startedAt])
+  @@index([status, startedAt])
+  @@map("agent_runs")
+}

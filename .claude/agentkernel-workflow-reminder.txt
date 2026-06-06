@@ -1,0 +1,7 @@
+[AgentKernel workflow] Keep the default repository identity generic.
+- Inspect the actual package, app, and docs surface before editing.
+- Keep Pi runtime concerns in packages/agent-kernel.
+- Keep AG-UI translation in packages/agui-bridge without importing app/database code.
+- Keep SQLite/Prisma persistence in apps/web.
+- Do not add domain-specific prompts, docs, env keys, or default runtime imports unless the user explicitly asks for that vertical.
+- For non-trivial changes, run the nearest tests/typecheck/build before claiming completion.

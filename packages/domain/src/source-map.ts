@@ -1,4 +1,4 @@
-export type SourceRole = "official" | "market" | "rules" | "news" | "context";
+export type SourceRole = "official" | "reference" | "rules" | "news" | "context" | "dataset" | (string & {});
 export type SourceTrustLevel = "high" | "medium" | "low" | "unknown";
 export type SourceStatus = "ok" | "degraded" | "missing";
 

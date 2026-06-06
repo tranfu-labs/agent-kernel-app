@@ -9,9 +9,9 @@ import {
 
 test("createResearchState starts after goal framing in method exploration with structured pause state", () => {
   const state = createResearchState({
-    goal: "Research Binance/Bitget funding-basis opportunities",
-    scope: "BTC/ETH/SOL read-only scan",
-    vertical: "funding_basis",
+    goal: "Research documentation sources for a support assistant",
+    scope: "Product docs and FAQ pages",
+    vertical: "knowledge_base",
   });
 
   const expectedSourceMap: SourceMap = {
@@ -28,9 +28,9 @@ test("createResearchState starts after goal framing in method exploration with s
 
 test("isMethodLocked only returns true for locked method states", () => {
   const exploring: ResearchState = createResearchState({
-    goal: "Research prediction market",
-    scope: "World Cup final",
-    vertical: "prediction_market",
+    goal: "Research support workflow",
+    scope: "Public docs",
+    vertical: "support_assistant",
   });
 
   const locked: ResearchState = {
@@ -38,7 +38,7 @@ test("isMethodLocked only returns true for locked method states", () => {
     methodState: {
       ...exploring.methodState,
       status: "locked",
-      selectedMethod: "multi_source_event_market_research",
+      selectedMethod: "multi_source_document_research",
     },
     autonomyMode: "auto_with_notice",
     pauseState: undefined,

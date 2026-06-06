@@ -1,10 +1,12 @@
 export type EvidenceSourceType =
-  | "exchange"
-  | "polymarket"
   | "web"
   | "official"
-  | "wallet"
-  | "calculation";
+  | "document"
+  | "database"
+  | "api"
+  | "user"
+  | "calculation"
+  | (string & {});
 
 export type EvidenceTrustLevel = "low" | "medium" | "high" | "official";
 

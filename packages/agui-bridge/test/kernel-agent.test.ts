@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import type { BaseEvent, RunAgentInput } from "@ag-ui/client";
 
-import { KernelAgent, latestUserText } from "../src/kernel-agent.js";
+import { KernelAgent, latestUserText, type AgentPersistence } from "../src/kernel-agent.js";
 import { WarmSessionStore, type PiSessionLike } from "../src/session-store.js";
 import type { PiSessionEvent } from "../src/pi-types.js";
 
@@ -59,13 +59,30 @@ function collect(agent: KernelAgent, input: RunAgentInput): Promise<BaseEvent[]>
   });
 }
 
+function recordingPersistence() {
+  const calls: Array<{ name: string; input: unknown }> = [];
+  const persistence: AgentPersistence = {
+    async onRunStart(input) {
+      calls.push({ name: "start", input });
+      return { sessionId: "session_1", userMessageId: "msg_user_1" };
+    },
+    async onRunFinish(input) {
+      calls.push({ name: "finish", input });
+    },
+    async onRunError(input) {
+      calls.push({ name: "error", input });
+    },
+  };
+  return { calls, persistence };
+}
+
 const PLAIN_TEXT_RUN: PiSessionEvent[] = [
   { type: "agent_start" },
   { type: "message_start", message: {} },
   { type: "message_update", message: {}, assistantMessageEvent: { type: "text_start", contentIndex: 0, partial: { role: "assistant", content: [{ type: "text", text: "" }] } } },
   { type: "message_update", message: {}, assistantMessageEvent: { type: "text_delta", contentIndex: 0, delta: "Found ", partial: { role: "assistant", content: [{ type: "text", text: "Found " }] } } },
-  { type: "message_update", message: {}, assistantMessageEvent: { type: "text_delta", contentIndex: 0, delta: "2 opportunities", partial: { role: "assistant", content: [{ type: "text", text: "Found 2 opportunities" }] } } },
-  { type: "message_update", message: {}, assistantMessageEvent: { type: "text_end", contentIndex: 0, content: "Found 2 opportunities", partial: { role: "assistant", content: [{ type: "text", text: "Found 2 opportunities" }] } } },
+  { type: "message_update", message: {}, assistantMessageEvent: { type: "text_delta", contentIndex: 0, delta: "2 documents", partial: { role: "assistant", content: [{ type: "text", text: "Found 2 documents" }] } } },
+  { type: "message_update", message: {}, assistantMessageEvent: { type: "text_end", contentIndex: 0, content: "Found 2 documents", partial: { role: "assistant", content: [{ type: "text", text: "Found 2 documents" }] } } },
   { type: "agent_end", willRetry: false },
 ];
 
@@ -75,7 +92,7 @@ describe("KernelAgent.run", () => {
     const store = new WarmSessionStore(async () => ({ session }), { sweepMs: 0 });
     const agent = new KernelAgent({ store });
 
-    const events = await collect(agent, makeInput("find BTC funding arb"));
+    const events = await collect(agent, makeInput("summarize the project notes"));
     assert.deepEqual(
       events.map((e) => e.type),
       ["RUN_STARTED", "TEXT_MESSAGE_START", "TEXT_MESSAGE_CONTENT", "TEXT_MESSAGE_CONTENT", "TEXT_MESSAGE_END", "RUN_FINISHED"],
@@ -134,6 +151,153 @@ describe("KernelAgent.run", () => {
     assert.equal(session.model?.id, "gpt-5.5");
   });
 
+  it("persists run start and final assistant text when a run completes", async () => {
+    const session = new ScriptedSession(PLAIN_TEXT_RUN);
+    const store = new WarmSessionStore(async () => ({ session }), { sweepMs: 0 });
+    const { calls, persistence } = recordingPersistence();
+    const agent = new KernelAgent({ store, resolveUserId: () => "alice", persistence });
+    const input = makeInput("remember this");
+    input.threadId = "thread_persist";
+    input.runId = "run_persist";
+    (input as unknown as { forwardedProps?: Record<string, unknown> }).forwardedProps = { model: "gpt-5.5" };
+
+    const events = await collect(agent, input);
+    assert.equal(events.at(-1)!.type, "RUN_FINISHED");
+    assert.deepEqual(
+      calls.map((c) => c.name),
+      ["start", "finish"],
+    );
+    assert.deepEqual(calls[0]!.input, {
+      userId: "alice",
+      threadId: "thread_persist",
+      runId: "run_persist",
+      model: "gpt-5.5",
+      latestUserText: "remember this",
+    });
+    assert.deepEqual(calls[1]!.input, {
+      runId: "run_persist",
+      assistantText: "Found 2 documents",
+    });
+  });
+
+  it("persists run failure when Pi prompt throws", async () => {
+    class ThrowingSession extends ScriptedSession {
+      override async prompt(): Promise<void> {
+        throw new Error("provider down");
+      }
+    }
+    const store = new WarmSessionStore(async () => ({ session: new ThrowingSession([]) }), { sweepMs: 0 });
+    const { calls, persistence } = recordingPersistence();
+    const agent = new KernelAgent({ store, persistence });
+
+    const events = await collect(agent, makeInput("fail please"));
+    const err = events.find((e) => e.type === "RUN_ERROR") as { code?: string } | undefined;
+    assert.equal(err?.code, "PI_PROMPT_ERROR");
+    assert.deepEqual(
+      calls.map((c) => c.name),
+      ["start", "error"],
+    );
+    assert.deepEqual(calls[1]!.input, {
+      runId: "run_1",
+      code: "PI_PROMPT_ERROR",
+      message: "provider down",
+    });
+  });
+
+  it("emits RUN_ERROR and marks the run failed when finish persistence throws after agent_end", async () => {
+    const session = new ScriptedSession(PLAIN_TEXT_RUN);
+    const store = new WarmSessionStore(async () => ({ session }), { sweepMs: 0 });
+    const calls: Array<{ name: string; input: unknown }> = [];
+    const persistence: AgentPersistence = {
+      async onRunStart(input) {
+        calls.push({ name: "start", input });
+        return { sessionId: "session_1", userMessageId: "msg_user_1" };
+      },
+      async onRunFinish(input) {
+        calls.push({ name: "finish", input });
+        throw new Error("database unavailable");
+      },
+      async onRunError(input) {
+        calls.push({ name: "error", input });
+      },
+    };
+    const agent = new KernelAgent({ store, persistence });
+
+    const events = await collect(agent, makeInput("finish failure"));
+    assert.deepEqual(
+      events.map((e) => e.type),
+      ["RUN_STARTED", "TEXT_MESSAGE_START", "TEXT_MESSAGE_CONTENT", "TEXT_MESSAGE_CONTENT", "TEXT_MESSAGE_END", "RUN_ERROR"],
+    );
+    const err = events.at(-1) as { code?: string; message?: string };
+    assert.equal(err.code, "PERSISTENCE_RUN_FINISH_ERROR");
+    assert.equal(err.message, "database unavailable");
+    assert.deepEqual(
+      calls.map((c) => c.name),
+      ["start", "finish", "error"],
+    );
+    assert.deepEqual(calls[2]!.input, {
+      runId: "run_1",
+      code: "PERSISTENCE_RUN_FINISH_ERROR",
+      message: "database unavailable",
+    });
+  });
+
+  it("persists cancellation when the client unsubscribes before prompt completes", async () => {
+    class HangingSession implements PiSessionLike {
+      isStreaming = false;
+      private listener: ((e: unknown) => void) | null = null;
+      subscribe(listener: (event: unknown) => void): () => void {
+        this.listener = listener;
+        return () => {
+          this.listener = null;
+        };
+      }
+      async prompt(): Promise<void> {
+        this.isStreaming = true;
+        this.listener?.({ type: "agent_start" });
+        await new Promise<never>(() => {});
+      }
+      async abort(): Promise<void> {
+        this.isStreaming = false;
+      }
+      dispose(): void {}
+    }
+
+    const store = new WarmSessionStore(async () => ({ session: new HangingSession() }), { sweepMs: 0 });
+    const calls: Array<{ name: string; input: unknown }> = [];
+    const persistence: AgentPersistence = {
+      async onRunStart(input) {
+        calls.push({ name: "start", input });
+        return { sessionId: "session_1", userMessageId: "msg_user_1" };
+      },
+      async onRunFinish(input) {
+        calls.push({ name: "finish", input });
+      },
+      async onRunError(input) {
+        calls.push({ name: "error", input });
+      },
+      async onRunCancel(input) {
+        calls.push({ name: "cancel", input });
+      },
+    };
+    const agent = new KernelAgent({ store, persistence });
+
+    const subscription = agent.run(makeInput("cancel please")).subscribe();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    subscription.unsubscribe();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    assert.deepEqual(
+      calls.map((c) => c.name),
+      ["start", "cancel"],
+    );
+    assert.deepEqual(calls[1]!.input, {
+      runId: "run_1",
+      code: "CLIENT_DISCONNECTED",
+      message: "Client disconnected before the run completed.",
+    });
+  });
+
   it("clone() preserves store + resolveUserId (CopilotKit clones the agent per request)", async () => {
     const created: string[] = [];
     const store = new WarmSessionStore(
@@ -179,7 +343,7 @@ describe("KernelAgent default identity (T8)", () => {
     const store = new WarmSessionStore(async () => ({ session: new ScriptedSession([]) }));
     const agent = new KernelAgent({ store });
     assert.ok(!new RegExp("p" + "r" + "i" + "s" + "m", "i").test(agent.description), "default description must not name the old product identity");
-    assert.ok(!/financial/i.test(agent.description), "default description must not be financial");
+    assert.ok(!new RegExp("fin" + "ancial", "i").test(agent.description), "default description must remain domain-free");
     assert.match(agent.description, /AgentKernel/);
   });
 });

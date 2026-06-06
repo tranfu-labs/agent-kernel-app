@@ -3,13 +3,8 @@
   "references": [
     { "path": "packages/domain" },
     { "path": "packages/storage" },
-    { "path": "packages/operations" },
-    { "path": "packages/tools" },
-    { "path": "packages/policies" },
     { "path": "packages/agui-bridge" },
     { "path": "packages/agent-kernel" },
-    { "path": "verticals/funding-basis" },
-    { "path": "legacy-adapters/prism-old" },
     { "path": "apps/agent-api" }
   ]
 }

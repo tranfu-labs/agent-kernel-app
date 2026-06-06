@@ -7,12 +7,7 @@ const nextConfig = {
   serverExternalPackages: [
     "@earendil-works/pi-coding-agent",
     "@agentkernel/agent-kernel",
-    "@agentkernel/funding-basis",
     "@agentkernel/agui-bridge",
-    "@agentkernel/tools",
-    "@agentkernel/domain",
-    "@agentkernel/policies",
-    "@agentkernel/operations",
     "@agentkernel/storage",
   ],
 };

@@ -1,3 +1,0 @@
-- [ ] Define prediction-market vertical declaration.
-- [ ] Define source snapshot and market context artifact mappings.
-- [ ] Define future connector boundaries without implementing execution.
