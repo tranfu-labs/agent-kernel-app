@@ -115,6 +115,29 @@ CLOUDAIKEY_BASE_URL=https://api.cloudaikey.com/v1
 DATABASE_URL=file:../data/agent-kernel-dev.db
 ```
 
+## Coolify Deployment
+
+This repository includes a Coolify-oriented `compose.yml` and `Dockerfile`.
+
+- Configure the Coolify domain on service `web` with internal port `3000`, for example `https://agent-kernel-app.tranfu.com:3000`.
+- The web service uses `expose: "3000"` and does not bind a public host port.
+- SQLite data is persisted in the `agentkernel-web-data` volume at `/app/apps/web/data`.
+- Container startup runs Prisma migrations before `next start`.
+
+Recommended production environment:
+
+```bash
+CLOUDAIKEY_API_KEY=
+CLOUDAIKEY_BASE_URL=https://api.cloudaikey.com/v1
+DATABASE_URL=file:../data/agent-kernel-prod.db
+PORT=3000
+HOSTNAME=0.0.0.0
+COPILOTKIT_TELEMETRY_DISABLED=1
+IMAGE_MINIMAX_BASE_URL=https://api.minimaxi.com
+IMAGE_GROK_API_KEY=
+IMAGE_GROK_BASE_URL=
+```
+
 ## Notes For New Products
 
 Use this repository as a starting point for agent applications that need:

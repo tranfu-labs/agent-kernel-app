@@ -2,6 +2,9 @@ import { ChatPanel } from "../components/chat-panel";
 import { WorkspaceSidebar } from "../components/workspace-sidebar";
 import { getWorkspaceData, LOCAL_USER_ID } from "../lib/db/workspace-sessions";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export default async function Page({
   searchParams,
 }: {

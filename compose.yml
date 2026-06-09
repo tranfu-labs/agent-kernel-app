@@ -1,0 +1,24 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      COPILOTKIT_TELEMETRY_DISABLED: 1
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: file:../data/agent-kernel-prod.db
+      CLOUDAIKEY_API_KEY: ${CLOUDAIKEY_API_KEY:-}
+      CLOUDAIKEY_BASE_URL: ${CLOUDAIKEY_BASE_URL:-https://api.cloudaikey.com/v1}
+      IMAGE_MINIMAX_BASE_URL: ${IMAGE_MINIMAX_BASE_URL:-https://api.minimaxi.com}
+      IMAGE_GROK_API_KEY: ${IMAGE_GROK_API_KEY:-}
+      IMAGE_GROK_BASE_URL: ${IMAGE_GROK_BASE_URL:-}
+    expose:
+      - "3000"
+    volumes:
+      - agentkernel-web-data:/app/apps/web/data
+    restart: unless-stopped
+
+volumes:
+  agentkernel-web-data:

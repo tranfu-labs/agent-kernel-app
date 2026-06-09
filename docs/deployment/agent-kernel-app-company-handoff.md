@@ -268,15 +268,50 @@ npm run smoke:generic
 
 ```bash
 npm ci
+npm run db:generate
 npm run build
 npm run web:build
+npm run db:deploy
 npm --workspace @agentkernel/web start
 ```
 
 当前注意：
 
-- `apps/web/package.json` 目前没有 `start` 脚本；正式部署前需要补充 `next start`。
+- `apps/web/package.json` 已包含 `start` 脚本，生产启动使用 `next start`。
 - `apps/web/lib/agent-runtime.ts` 使用 warm session，全量生产部署应使用持久 Node 进程，不建议放到无状态 serverless。
+
+### Coolify Compose 部署
+
+仓库根目录已提供：
+
+```text
+Dockerfile
+compose.yml
+.dockerignore
+```
+
+Coolify 配置建议：
+
+- 选择 `compose.yml` 部署。
+- 给 service `web` 配置 Domain。
+- Domain 内部端口使用 `3000`，例如 `https://agent-kernel-app.tranfu.com:3000`。
+- 不需要配置宿主机公网 `ports:`；`compose.yml` 只使用 `expose: "3000"`。
+- SQLite 持久化目录为 `/app/apps/web/data`，由 volume `agentkernel-web-data` 保存。
+- 容器启动命令会先执行 `npm run db:deploy`，再启动 `next start`。
+
+Coolify 环境变量建议：
+
+```bash
+CLOUDAIKEY_API_KEY=填入真实模型 API Key
+CLOUDAIKEY_BASE_URL=https://api.cloudaikey.com/v1
+DATABASE_URL=file:../data/agent-kernel-prod.db
+PORT=3000
+HOSTNAME=0.0.0.0
+COPILOTKIT_TELEMETRY_DISABLED=1
+IMAGE_MINIMAX_BASE_URL=https://api.minimaxi.com
+IMAGE_GROK_API_KEY=
+IMAGE_GROK_BASE_URL=
+```
 
 ## 10. 部署成功后的交付结果
 
