@@ -54,6 +54,9 @@ jobs:
       - name: Prisma generate（测试前置）
         run: npm run db:generate
 
+      - name: 构建 packages（生成 dist，测试跨包 import 依赖）
+        run: npm run build
+
       - name: 跑 Node 测试
         run: npm test
 
