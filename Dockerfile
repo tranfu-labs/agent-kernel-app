@@ -48,4 +48,7 @@ RUN mkdir -p /app/apps/web/data
 
 EXPOSE 3000
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))" || exit 1
+
 CMD ["sh", "-c", "npm run db:deploy && npm --workspace @agentkernel/web start"]

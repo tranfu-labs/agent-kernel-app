@@ -1,8 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/tranfu-labs/agent-kernel-app:latest
     environment:
       NODE_ENV: production
       COPILOTKIT_TELEMETRY_DISABLED: 1
@@ -18,7 +16,18 @@ services:
       - "3000"
     volumes:
       - agentkernel-web-data:/app/apps/web/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
 
 volumes:
   agentkernel-web-data:
+    name: agent-kernel-web-data
